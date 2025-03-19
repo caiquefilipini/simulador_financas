@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const segmentPLData = {};
   const segmentPLDataPPTO = {};
   const segmentIndicadores = {};
-  
+  let data = null;
 
   // Dados de carteiras, spreads etc.
   let dadosPlanilha = {
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       
-      const data = await response.json();
+      data = await response.json();
       console.log("Dados JSON carregados com sucesso:", data);
       
       // Inicializar estruturas para cada segmento
@@ -495,6 +495,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+// Função para calcular spread baseado em Margem/Carteira para itens como "Demais"
+function calcularSpreadBaseadoEmMargem(dadosPlanilha, segment, tipo) {
+  const data = dadosPlanilha.credito[segment][tipo] || {
+    carteira: 0,
+    margem: 0
+  };
+  
+  // Se a carteira for zero, evita divisão por zero
+  if (data.carteira === 0 || data.carteira === null || data.carteira === undefined) {
+    return 0;
+  }
+  
+  // Calcula o spread como Margem/Carteira * 100 (para ser apresentado como percentual)
+  return ((data.margem / data.carteira) * 100).toFixed(2);
+}
+
+// Função similar para captações
+function calcularSpreadCaptacoesBaseadoEmMargem(dadosPlanilha, segment, tipo) {
+  const data = dadosPlanilha.captacoes[segment][tipo] || {
+    carteira: 0,
+    margem: 0
+  };
+  
+  if (data.carteira === 0 || data.carteira === null || data.carteira === undefined) {
+    return 0;
+  }
+  
+  return ((data.margem / data.carteira) * 100).toFixed(2);
+}
+
+
 // Função para carregar dados de crédito
 function loadCreditData(segment) {
   const creditBody = document.getElementById('credito-body');
@@ -508,7 +539,7 @@ function loadCreditData(segment) {
   // Verificar se os tipos de crédito para o segmento existem
   const tiposCredito = creditTypes[segment] || [];
   if (tiposCredito.length === 0) {
-    creditBody.innerHTML = '<tr><td colspan="6" style="text-align: center">Não há dados de crédito para este segmento</td></tr>';
+    creditBody.innerHTML = '<tr><td colspan="11" style="text-align: center">Não há dados de crédito para este segmento</td></tr>';
     return;
   }
   
@@ -525,20 +556,26 @@ function loadCreditData(segment) {
       rwa: 0
     };
     
+    // Verificar se é o tipo "Demais" ou similar para calcular o spread baseado na margem
+    let spreadReal = data.spread;
+    if (tipo === 'Demais') {
+      spreadReal = calcularSpreadBaseadoEmMargem(dadosPlanilha, segment, tipo);
+    }
+    
     // Recuperar valores simulados (ou usar valores reais como padrão)
     const carteiraSimulada = ajustes[segment].credito[`${tipo}_carteiraSimulada`] || data.carteira;
-    const spreadSimulado = ajustes[segment].credito[`${tipo}_spreadSimulado`] || data.spread;
+    const spreadSimulado = ajustes[segment].credito[`${tipo}_spreadSimulado`] || spreadReal;
     const provisaoSimulada = ajustes[segment].credito[`${tipo}_provisaoSimulada`] || data.provisao;
-
+    
     // Calcular margem simulada e RWA simulado baseado nas fórmulas
-    const margemSimulada = calcularMargemSimulada(data.carteira, data.margem, carteiraSimulada);
+    const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
     const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
     
     row.innerHTML = `
       <td>${tipo}</td>
       <td>${formatNumber(data.carteira)}</td>
       <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
-      <td>${data.spread}%</td>
+      <td>${spreadReal}%</td>
       <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
       <td>${formatNumber(data.provisao)}</td>
       <td><input type="number" class="provisao-simulada" value="${provisaoSimulada}" data-tipo="${tipo}" data-campo="provisaoSimulada"></td>
@@ -561,9 +598,9 @@ function loadCreditData(segment) {
 }
 
 // Função para calcular a margem simulada
-function calcularMargemSimulada(carteiraReal, margemReal, carteiraSimulada) {
-  // return carteiraSimulada * (spreadSimulado / 100);
-  return (margemReal / carteiraReal) * carteiraSimulada;
+function calcularMargemSimulada(carteiraSimulada, spreadSimulado) {
+  return carteiraSimulada * (spreadSimulado / 100);
+  // return (margemReal / carteiraReal) * carteiraSimulada;
 }
 
 // Função para calcular o RWA simulado
@@ -600,7 +637,7 @@ function updateCreditSimulatedValues(event, segment) {
   const spreadSimulado = parseFloat(ajustes[segment].credito[`${tipo}_spreadSimulado`] || data.spread);
   
   // Calcular novos valores
-  const margemSimulada = calcularMargemSimulada(data.carteira, data.margem, carteiraSimulada);
+  const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
   const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
   
   // Atualizar os valores calculados na interface
@@ -980,108 +1017,168 @@ function updateCreditSimulatedValues(event, segment) {
     lista.appendChild(item);
   }
 
-  // Função para carregar dados de P&L
-  function loadPLData(segment = 'total') {
-    const plBody = document.getElementById('pl-body');
-    if (!plBody) {
-      console.error("Elemento 'pl-body' não encontrado!");
-      return;
+ // Função para carregar dados de P&L com cálculo correto de % PPTO
+function loadPLData(segment = 'total') {
+  const plBody = document.getElementById('pl-body');
+  if (!plBody) {
+    console.error("Elemento 'pl-body' não encontrado!");
+    return;
+  }
+  
+  plBody.innerHTML = '';
+  
+  // Determinar quais dados usar
+  let dataToUse;
+  let pptoData;
+  
+  if (segment === 'total') {
+    dataToUse = plDataTotal;
+    
+    // Usar o objeto de PPTO para Total do JSON carregado
+    if (data && data.Total && data.Total.cascada) {
+      pptoData = data.Total.cascada;
     }
     
-    plBody.innerHTML = '';
+    // Atualizar botão de visualização
+    document.getElementById('btn-view-total')?.classList.add('active');
+    document.getElementById('btn-view-segment')?.classList.remove('active');
+  } else {
+    dataToUse = segmentPLData[segment];
     
-    // Determinar quais dados usar
-    let dataToUse;
-    if (segment === 'total') {
-      dataToUse = plDataTotal;
-      // Atualizar botão de visualização
-      document.getElementById('btn-view-total')?.classList.add('active');
-      document.getElementById('btn-view-segment')?.classList.remove('active');
-    } else {
-      dataToUse = segmentPLData[segment];
-      // Atualizar botão de visualização
-      document.getElementById('btn-view-total')?.classList.remove('active');
-      document.getElementById('btn-view-segment')?.classList.add('active');
-      // Atualizar o texto do botão de segmento
-      if (document.getElementById('btn-view-segment')) {
-        document.getElementById('btn-view-segment').textContent = segment;
-      }
+    // Usar o objeto de PPTO para o segmento específico
+    if (data && data[segment] && data[segment].cascada) {
+      pptoData = data[segment].cascada;
     }
+    
+    // Atualizar botão de visualização
+    document.getElementById('btn-view-total')?.classList.remove('active');
+    document.getElementById('btn-view-segment')?.classList.add('active');
+    // Atualizar o texto do botão de segmento
+    if (document.getElementById('btn-view-segment')) {
+      document.getElementById('btn-view-segment').textContent = segment;
+    }
+  }
 
-    // Se não houver dados para o segmento selecionado
-    if (!dataToUse) {
-      plBody.innerHTML = '<tr><td colspan="5" style="text-align: center">Dados não disponíveis para este segmento</td></tr>';
-      return;
+  // Se não houver dados para o segmento selecionado
+  if (!dataToUse) {
+    plBody.innerHTML = '<tr><td colspan="5" style="text-align: center">Dados não disponíveis para este segmento</td></tr>';
+    return;
+  }
+  
+  // Função para calcular a % PPTO
+  function calculatePPTOPercentage(real, ppto) {
+    if (!ppto || ppto == 0) return "-";
+    return ((real / ppto) * 100).toFixed(1);
+  }
+  
+  Object.entries(dataToUse).forEach(([key, data]) => {
+    const row = document.createElement('tr');
+    
+    if (key === 'MOL' || key === 'BAI' || key === 'BDI') {
+      row.classList.add('highlight');
     }
     
-    Object.entries(dataToUse).forEach(([key, data]) => {
-      const row = document.createElement('tr');
-      
-      if (key === 'MOL' || key === 'BAI' || key === 'BDI') {
-        row.classList.add('highlight');
-      }
+    // Obter o valor do PPTO para este campo
+    let pptoValue = 0;
+    if (pptoData) {
+      const pptoKey = "PPTO_" + key;
+      pptoValue = pptoData[pptoKey] || 0;
+    }
+    
+    // Calcular % PPTO
+    const pptoRealPercentage = calculatePPTOPercentage(data.real, pptoValue);
+    const pptoSimuladoPercentage = calculatePPTOPercentage(data.simulado, pptoValue);
+    
+    row.innerHTML = `
+      <td>${key}</td>
+      <td>${formatNumber(data.real)}</td>
+      <td>${formatNumber(data.simulado)}</td>
+      <td>${pptoRealPercentage === "-" ? "-" : pptoRealPercentage + "%"}</td>
+      <td>${pptoSimuladoPercentage === "-" ? "-" : pptoSimuladoPercentage + "%"}</td>
+    `;
+    
+    plBody.appendChild(row);
+  });
+}
+
+// Função para carregar dados de Indicadores com cálculo correto de % PPTO
+function loadIndicadoresData(segment = 'total') {
+  const indicadoresBody = document.getElementById('indicadores-body');
+  if (!indicadoresBody) {
+    console.error("Elemento 'indicadores-body' não encontrado!");
+    return;
+  }
+  
+  indicadoresBody.innerHTML = '';
+  
+  // Determinar quais dados usar
+  let dataToUse = (segment === 'total') ? indicadoresTotal : segmentIndicadores[segment];
+  let pptoData;
+  
+  // Obter dados de PPTO
+  if (segment === 'total') {
+    if (data && data.Total && data.Total.cascada) {
+      pptoData = data.Total.cascada;
+    }
+  } else {
+    if (data && data[segment] && data[segment].cascada) {
+      pptoData = data[segment].cascada;
+    }
+  }
+  
+  // Se não houver dados para o segmento selecionado
+  if (!dataToUse) {
+    indicadoresBody.innerHTML = '<tr><td colspan="5" style="text-align: center">Indicadores não disponíveis para este segmento</td></tr>';
+    return;
+  }
+  
+  // Função para calcular a % PPTO
+  function calculatePPTOPercentage(real, ppto) {
+    if (!ppto || ppto == 0) return "-";
+    return ((real / ppto) * 100).toFixed(1);
+  }
+  
+  Object.entries(dataToUse).forEach(([key, data]) => {
+    const row = document.createElement('tr');
+    
+    // Obter o valor do PPTO para este indicador
+    let pptoValue = 0;
+    if (pptoData) {
+      const pptoKey = "PPTO_" + key;
+      pptoValue = pptoData[pptoKey] || 0;
+    }
+    
+    // Calcular % PPTO
+    const pptoRealPercentage = calculatePPTOPercentage(data.real, pptoValue);
+    const pptoSimuladoPercentage = calculatePPTOPercentage(data.simulado, pptoValue);
+    
+    // Verificar se é RWA ou RORWA
+    if (key === 'RWA' || key === 'RORWA') {
+      // Para RWA e RORWA, tratamento especial
+      const realValue = key === 'RWA' ? formatNumber(data.real) : data.real.toFixed(1) + '%';
+      const simuladoValue = key === 'RWA' ? formatNumber(data.simulado) : data.simulado.toFixed(1) + '%';
       
       row.innerHTML = `
         <td>${key}</td>
-        <td>${formatNumber(data.real)}</td>
-        <td>${formatNumber(data.simulado)}</td>
-        <td>${data.atingimentoReal.toFixed(1)}%</td>
-        <td>${data.atingimentoSimulado.toFixed(1)}%</td>
+        <td>${realValue}</td>
+        <td>${simuladoValue}</td>
+        <td>-</td>
+        <td>-</td>
       `;
-      
-      plBody.appendChild(row);
-    });
-  }
-
-  // Função para carregar dados de Indicadores
-  function loadIndicadoresData(segment = 'total') {
-    const indicadoresBody = document.getElementById('indicadores-body');
-    if (!indicadoresBody) {
-      console.error("Elemento 'indicadores-body' não encontrado!");
-      return;
+    } else {
+      // Para outros indicadores, tratamento normal
+      row.innerHTML = `
+        <td>${key}</td>
+        <td>${data.real.toFixed(1)}%</td>
+        <td>${data.simulado.toFixed(1)}%</td>
+        <td>${pptoRealPercentage === "-" ? "-" : pptoRealPercentage + "%"}</td>
+        <td>${pptoSimuladoPercentage === "-" ? "-" : pptoSimuladoPercentage + "%"}</td>
+      `;
     }
     
-    indicadoresBody.innerHTML = '';
-    
-    // Determinar quais dados usar
-    let dataToUse = (segment === 'total') ? indicadoresTotal : segmentIndicadores[segment];
-    
-    // Se não houver dados para o segmento selecionado
-    if (!dataToUse) {
-      indicadoresBody.innerHTML = '<tr><td colspan="5" style="text-align: center">Indicadores não disponíveis para este segmento</td></tr>';
-      return;
-    }
-    
-    Object.entries(dataToUse).forEach(([key, data]) => {
-      const row = document.createElement('tr');
-      
-      // Verificar se é RWA ou RORWA
-      if (key === 'RWA' || key === 'RORWA') {
-        // Para RWA e RORWA, tratamento especial
-        const realValue = key === 'RWA' ? formatNumber(data.real) : data.real.toFixed(1) + '%';
-        const simuladoValue = key === 'RWA' ? formatNumber(data.simulado) : data.simulado.toFixed(1) + '%';
-        
-        row.innerHTML = `
-          <td>${key}</td>
-          <td>${realValue}</td>
-          <td>${simuladoValue}</td>
-          <td>-</td>
-          <td>-</td>
-        `;
-      } else {
-        // Para outros indicadores, tratamento normal
-        row.innerHTML = `
-          <td>${key}</td>
-          <td>${data.real.toFixed(1)}%</td>
-          <td>${data.simulado.toFixed(1)}%</td>
-          <td>${data.atingimentoReal.toFixed(1)}%</td>
-          <td>${data.atingimentoSimulado.toFixed(1)}%</td>
-        `;
-      }
-      
-      indicadoresBody.appendChild(row);
-    });
-  }
+    indicadoresBody.appendChild(row);
+  });
+}
 
   // Função para configurar os botões de visualização do P&L
   function setupPLViewButtons() {
@@ -1188,53 +1285,59 @@ function updateCreditSimulatedValues(event, segment) {
     }
     
     captacoesBody.innerHTML = '';
+  
+  // Verificar se há tipos de captação para este segmento
+  const tiposCaptacao = fundingTypes[segment] || [];
+  if (tiposCaptacao.length === 0) {
+    captacoesBody.innerHTML = '<tr><td colspan="7" style="text-align: center">Não há dados de captação para este segmento</td></tr>';
+    return;
+  }
+  
+  // Percorrer os tipos de captação
+  tiposCaptacao.forEach(tipo => {
+    const row = document.createElement('tr');
     
-    // Verificar se há tipos de captação para este segmento
-    const tiposCaptacao = fundingTypes[segment] || [];
-    if (tiposCaptacao.length === 0) {
-      captacoesBody.innerHTML = '<tr><td colspan="7" style="text-align: center">Não há dados de captação para este segmento</td></tr>';
-      return;
+    // Obter dados da planilha para este tipo (ou usar padrão)
+    const data = dadosPlanilha.captacoes[segment][tipo] || {
+      carteira: 0,
+      spread: 0,
+      margem: 0,
+    };
+    
+    // Verificar se é o tipo "Demais" para calcular o spread baseado na margem
+    let spreadReal = data.spread;
+    if (tipo === 'Demais') {
+      spreadReal = calcularSpreadCaptacoesBaseadoEmMargem(dadosPlanilha, segment, tipo);
     }
     
-    // Percorrer os tipos de captação
-    tiposCaptacao.forEach(tipo => {
-      const row = document.createElement('tr');
-      
-      // Obter dados da planilha para este tipo (ou usar padrão)
-      const data = dadosPlanilha.captacoes[segment][tipo] || {
-        carteira: 0,
-        spread: 0,
-        margem: 0,
-      };
-      
-      // Recuperar valores simulados
-      const carteiraSimulada = ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira;
-      const spreadSimulado = ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || data.spread;
-      
-      // Calcular margem simulada baseada na fórmula: Carteira Simulada * Spread Simulado
-      const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
-      
-      row.innerHTML = `
-        <td>${tipo}</td>
-        <td>${formatNumber(data.carteira)}</td>
-        <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
-        <td>${data.spread}%</td>
-        <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
-        <td>${formatNumber(data.margem)}</td>
-        <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
-      `;
-      
-      captacoesBody.appendChild(row);
-    });
+    // Recuperar valores simulados
+    const carteiraSimulada = ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira;
+    const spreadSimulado = ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || spreadReal;
     
-    // Adicionar event listeners
-    const inputs = captacoesBody.querySelectorAll('input');
-    inputs.forEach(input => {
-      input.addEventListener('input', function(event) {
-        updateFundingSimulatedValues(event, segment);
-      });
+    // Calcular margem simulada baseada na fórmula: Carteira Simulada * Spread Simulado
+    const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
+    
+    row.innerHTML = `
+      <td>${tipo}</td>
+      <td>${formatNumber(data.carteira)}</td>
+      <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
+      <td>${spreadReal}%</td>
+      <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
+      <td>${formatNumber(data.margem)}</td>
+      <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
+    `;
+    
+    captacoesBody.appendChild(row);
+  });
+  
+  // Adicionar event listeners
+  const inputs = captacoesBody.querySelectorAll('input');
+  inputs.forEach(input => {
+    input.addEventListener('input', function(event) {
+      updateFundingSimulatedValues(event, segment);
     });
-  }
+  });
+}
   
   // Função para calcular a margem simulada para captações
   function calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado) {
