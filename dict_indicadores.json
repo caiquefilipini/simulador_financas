@@ -107,8 +107,8 @@
             "PPTO_Oryp": 1298.0,
             "PPTO_PDD": 9771.0,
             "PPTO_Total Gastos": 5717.0,
-            "RORWA": 0.0,
-            "RWA": 0.0,
+            "RORWA": 4.2,
+            "RWA": 41286.86,
             "Total Gastos": 5761.0
         }
     },
@@ -122,7 +122,7 @@
                 "Consignado": 1494.0,
                 "Demais": 0.0,
                 "Hipotecas": 107.0,
-                "Microcrédito": 0.0
+                "Microcrédito": 2719.0
             },
             "spread": {
                 "Autos": 9.25,
@@ -225,8 +225,8 @@
             "PPTO_Oryp": 95.0,
             "PPTO_PDD": 390.0,
             "PPTO_Total Gastos": 440.0,
-            "RORWA": 0.0,
-            "RWA": 0.0,
+            "RORWA": 6.88,
+            "RWA": 1143.07,
             "Total Gastos": 453.0
         }
     },
@@ -240,7 +240,7 @@
                 "Cheque Especial": 2610.0,
                 "Comex": 2111.0,
                 "Consignado": 19940.0,
-                "Demais": 19544.0,
+                "Demais": 18710.0,
                 "Hipotecas": 53263.0
             },
             "spread": {
@@ -351,8 +351,8 @@
             "PPTO_Oryp": 479.0,
             "PPTO_PDD": 5841.0,
             "PPTO_Total Gastos": 7347.0,
-            "RORWA": 0.0,
-            "RWA": 0.0,
+            "RORWA": 3.97,
+            "RWA": 59090.22,
             "Total Gastos": 7507.0
         }
     },
@@ -369,7 +369,7 @@
                 "Conta Garantida": 3113.0,
                 "Demais": 20895.0,
                 "Hipotecas": 2377.0,
-                "Internegócios": 3113.0
+                "Internegócios": 834.0
             },
             "spread": {
                 "Agro": 4.89,
@@ -969,7 +969,7 @@
             "PPTO_Oryp": 3130.0,
             "PPTO_PDD": 26349.0,
             "PPTO_Total Gastos": 25700.0,
-            "RORWA": 0.03,
+            "RORWA": 0.04,
             "RWA": 600644.0,
             "Total Gastos": 26129.0
         }
