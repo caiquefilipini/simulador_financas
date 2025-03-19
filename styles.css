@@ -524,6 +524,79 @@ table td {
     -moz-appearance: textfield;
   }
 
+/* Alinhamento dos cabeçalhos apenas para as tabelas nas abas */
+#credito table th,
+#captacoes table th,
+#comissoes table th {
+  text-align: left !important; /* Força alinhamento à esquerda */
+  padding-left: 15px; /* Adiciona um pouco de espaço à esquerda */
+}
+
+/* Primeira coluna de cada linha nas tabelas das abas */
+#credito table td:first-child,
+#captacoes table td:first-child,
+#comissoes table td:first-child {
+  text-align: left !important;
+  padding-left: 15px;
+}
+
+/* Preserva os alinhamentos originais para a tabela de Cascada */
+.pl-table th:first-child {
+  text-align: left; /* Primeira coluna à esquerda */
+}
+
+.pl-table th:not(:first-child) {
+  text-align: center; /* Outras colunas centralizadas */
+}
+
+
+/* Adicionar bordas leves entre as colunas das tabelas */
+#credito table th,
+#captacoes table th,
+#comissoes table th,
+#credito table td,
+#captacoes table td,
+#comissoes table td {
+  border-right: 1px solid #e0e0e0; /* Borda cinza clara à direita de cada célula */
+}
+
+/* Remover borda da última coluna para manter aparência limpa */
+#credito table th:last-child,
+#captacoes table th:last-child,
+#comissoes table th:last-child,
+#credito table td:last-child,
+#captacoes table td:last-child,
+#comissoes table td:last-child {
+  border-right: none;
+}
+
+/* Separador visual mais evidente entre cabeçalho e corpo da tabela */
+#credito table thead,
+#captacoes table thead,
+#comissoes table thead {
+  border-bottom: 2px solid #ddd;
+}
+
+/* Opcional: bordas leves também para a tabela de Cascada */
+.pl-table th,
+.pl-table td {
+  border-right: 1px solid #e0e0e0;
+}
+
+.pl-table th:last-child,
+.pl-table td:last-child {
+  border-right: none;
+}
+
+/* Melhorar espaçamento das células para acomodar as bordas */
+table th, 
+table td {
+  padding: 12px 15px;
+}
+
+
+
+
   /* Nova abordagem */
 .input-with-percent {
     display: flex;

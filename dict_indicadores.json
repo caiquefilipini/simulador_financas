@@ -20,12 +20,12 @@
                 "Hipotecas": 1.5
             },
             "provisao": {
-                "Autos": -380.0,
-                "CP": -2917.0,
-                "Cartões": -3317.0,
-                "Consignado": -1957.0,
-                "Demais": -496.0,
-                "Hipotecas": -68.0
+                "Autos": 380.0,
+                "CP": 2917.0,
+                "Cartões": 3317.0,
+                "Consignado": 1957.0,
+                "Demais": 516.0,
+                "Hipotecas": 68.0
             },
             "margem": {
                 "Autos": 465.0,
@@ -35,14 +35,23 @@
                 "Consignado": 3294.0,
                 "Demais": 173.14,
                 "Hipotecas": 2.0
+            },
+            "rwa": {
+                "Autos": 3519.0,
+                "CP": 2496.0,
+                "Cartões": 7841.0,
+                "Cheque Especial": 1067.0,
+                "Consignado": 22553.0,
+                "Demais": 28.0,
+                "Hipotecas": 3579.0
             }
         },
         "comissoes": {
             "Capitalização": 448.0,
             "Cartões": 1654.0,
-            "Demais": 1165.0,
+            "Demais": 1333.0,
             "Esfera": 33.0,
-            "Fidelização INSS": -266.0,
+            "Fidelização INSS": 266.0,
             "Seguros Open": 597.0,
             "Seguros Related": 491.0,
             "Tarifas C/C": 489.0,
@@ -80,28 +89,28 @@
             "margem": {}
         },
         "cascada": {
-            "BAI": -1848.0,
-            "BDI": -1735.0,
-            "Demais Ativos": -185.0,
+            "BAI": 1848.0,
+            "BDI": 1735.0,
+            "Demais Ativos": 185.0,
             "Impostos": 113.0,
             "MOB": 14768.0,
             "MOL": 5070.0,
-            "Oryp": -972.0,
-            "PDD": -9698.0,
-            "PPTO_BAI": -1579.0,
-            "PPTO_BDI": -1638.0,
-            "PPTO_Demais Ativos": -144.0,
+            "Oryp": 972.0,
+            "PDD": 9698.0,
+            "PPTO_BAI": 1579.0,
+            "PPTO_BDI": 1638.0,
+            "PPTO_Demais Ativos": 144.0,
             "PPTO_Eficiência": 37.0,
-            "PPTO_Impostos": -59.0,
+            "PPTO_Impostos": 59.0,
             "PPTO_MOB": 15351.0,
             "PPTO_MOL": 5580.0,
-            "PPTO_Oryp": -1298.0,
-            "PPTO_PDD": -9771.0,
-            "PPTO_Taxa Impositiva": -4.0,
-            "PPTO_Total Gastos": -5717.0,
+            "PPTO_Oryp": 1298.0,
+            "PPTO_PDD": 9771.0,
+            "PPTO_Taxa Impositiva": 4.0,
+            "PPTO_Total Gastos": 5717.0,
             "RORWA": 0.0,
             "RWA": 0.0,
-            "Total Gastos": -5761.0
+            "Total Gastos": 5761.0
         }
     },
     "Prospera": {
@@ -127,13 +136,13 @@
                 "Microcrédito": 36.1
             },
             "provisao": {
-                "Autos": -28.0,
-                "CP": -34.0,
-                "Cartões": -181.0,
-                "Consignado": -96.0,
-                "Demais": -10.0,
+                "Autos": 28.0,
+                "CP": 34.0,
+                "Cartões": 181.0,
+                "Consignado": 96.0,
+                "Demais": 10.0,
                 "Hipotecas": 0.0,
-                "Microcrédito": -213.0
+                "Microcrédito": 213.0
             },
             "margem": {
                 "Autos": 17.0,
@@ -144,18 +153,28 @@
                 "Demais": 2.09,
                 "Hipotecas": 652.0,
                 "Microcrédito": 982.0
+            },
+            "rwa": {
+                "Autos": 130.0,
+                "CP": 16.0,
+                "Cartões": 71.0,
+                "Cheque Especial": 11.0,
+                "Consignado": 876.0,
+                "Demais": 0.0,
+                "Hipotecas": 33.0,
+                "Microcrédito": 1411.0
             }
         },
         "comissoes": {
             "Capitalização": 12.0,
             "Cartões": 76.0,
-            "Demais": -9.0,
+            "Demais": 13.0,
             "Esfera": 0.0,
             "Fidelização INSS": 0.0,
             "Seguros Open": 12.0,
             "Seguros Related": 22.0,
             "Tarifas C/C": 24.0,
-            "Tecban": -2.0
+            "Tecban": 2.0
         },
         "captacoes": {
             "spread": {
@@ -191,26 +210,26 @@
         "cascada": {
             "BAI": 334.0,
             "BDI": 176.0,
-            "Demais Ativos": -1.0,
-            "Impostos": -157.0,
+            "Demais Ativos": 1.0,
+            "Impostos": 157.0,
             "MOB": 1269.0,
             "MOL": 857.0,
-            "Oryp": -70.0,
-            "PDD": -412.0,
+            "Oryp": 70.0,
+            "PDD": 412.0,
             "PPTO_BAI": 733.0,
             "PPTO_BDI": 456.0,
-            "PPTO_Demais Ativos": -8.0,
+            "PPTO_Demais Ativos": 8.0,
             "PPTO_Eficiência": 26.0,
-            "PPTO_Impostos": -277.0,
+            "PPTO_Impostos": 277.0,
             "PPTO_MOB": 1666.0,
             "PPTO_MOL": 1276.0,
-            "PPTO_Oryp": -95.0,
-            "PPTO_PDD": -390.0,
+            "PPTO_Oryp": 95.0,
+            "PPTO_PDD": 390.0,
             "PPTO_Taxa Impositiva": 38.0,
-            "PPTO_Total Gastos": -440.0,
+            "PPTO_Total Gastos": 440.0,
             "RORWA": 0.0,
             "RWA": 0.0,
-            "Total Gastos": -453.0
+            "Total Gastos": 453.0
         }
     },
     "Select": {
@@ -238,14 +257,14 @@
                 "Hipotecas": 1.2
             },
             "provisao": {
-                "Agro": -210.0,
-                "Autos": -200.0,
-                "CP": -2269.0,
-                "Cartões": -1585.0,
-                "Comex": -4.0,
-                "Consignado": -552.0,
-                "Demais": -405.0,
-                "Hipotecas": -208.0
+                "Agro": 210.0,
+                "Autos": 200.0,
+                "CP": 2269.0,
+                "Cartões": 1585.0,
+                "Comex": 4.0,
+                "Consignado": 552.0,
+                "Demais": 405.0,
+                "Hipotecas": 208.0
             },
             "margem": {
                 "Agro": 408.0,
@@ -257,18 +276,29 @@
                 "Consignado": 1625.0,
                 "Demais": 875.47,
                 "Hipotecas": 0.0
+            },
+            "rwa": {
+                "Agro": 3944.0,
+                "Autos": 2766.0,
+                "CP": 2443.0,
+                "Cartões": 10801.0,
+                "Cheque Especial": 1594.0,
+                "Comex": 1175.0,
+                "Consignado": 11694.0,
+                "Demais": 7542.0,
+                "Hipotecas": 16390.0
             }
         },
         "comissoes": {
-            "AAA": -62.0,
+            "AAA": 62.0,
             "Capitalização": 1439.0,
             "Cartões": 2153.0,
-            "Demais": 3198.0,
+            "Demais": 4024.0,
             "Esfera": 373.0,
             "Seguros Open": 781.0,
             "Seguros Related": 661.0,
             "Tarifas C/C": 765.0,
-            "Tecban": -12.0
+            "Tecban": 12.0
         },
         "captacoes": {
             "spread": {
@@ -307,26 +337,26 @@
         "cascada": {
             "BAI": 4503.0,
             "BDI": 2327.0,
-            "Demais Ativos": -74.0,
-            "Impostos": -2176.0,
+            "Demais Ativos": 74.0,
+            "Impostos": 2176.0,
             "MOB": 18966.0,
             "MOL": 12919.0,
-            "Oryp": -834.0,
-            "PDD": -6047.0,
+            "Oryp": 834.0,
+            "PDD": 6047.0,
             "PPTO_BAI": 4680.0,
             "PPTO_BDI": 2590.0,
-            "PPTO_Demais Ativos": -163.0,
+            "PPTO_Demais Ativos": 163.0,
             "PPTO_Eficiência": 40.0,
-            "PPTO_Impostos": -2090.0,
+            "PPTO_Impostos": 2090.0,
             "PPTO_MOB": 18511.0,
             "PPTO_MOL": 12669.0,
-            "PPTO_Oryp": -479.0,
-            "PPTO_PDD": -5841.0,
+            "PPTO_Oryp": 479.0,
+            "PPTO_PDD": 5841.0,
             "PPTO_Taxa Impositiva": 45.0,
-            "PPTO_Total Gastos": -7347.0,
+            "PPTO_Total Gastos": 7347.0,
             "RORWA": 0.0,
             "RWA": 0.0,
-            "Total Gastos": -7507.0
+            "Total Gastos": 7507.0
         }
     },
     "PJ": {
@@ -381,6 +411,19 @@
                 "Demais": 1730.51,
                 "Hipotecas": 0.0,
                 "Internegócios": 0.0
+            },
+            "rwa": {
+                "Agro": 758.0,
+                "Autos": 3617.0,
+                "Capital de Giro": 20078.0,
+                "Cartões": 2057.0,
+                "Cheque Emp/ADP": 1309.0,
+                "Comex": 10603.0,
+                "Confirming": 930.0,
+                "Conta Garantida": 1942.0,
+                "Demais": 3778.0,
+                "Hipotecas": 1832.0,
+                "Internegócios": 87.0
             }
         },
         "comissoes": {
@@ -388,13 +431,13 @@
             "Capitalização": 28.0,
             "Cartões": 576.0,
             "Cash": 12.0,
-            "Demais": 1970.0,
+            "Demais": 2650.0,
             "Esfera": 431.0,
             "FX": 100.0,
             "Seguros Open": 576.0,
             "Seguros Related": 254.0,
-            "Tarifas C/C": -11.0,
-            "Tecban": -82.0
+            "Tarifas C/C": 11.0,
+            "Tecban": 82.0
         },
         "captacoes": {
             "spread": {
@@ -436,26 +479,26 @@
         "cascada": {
             "BAI": 7859.0,
             "BDI": 4675.0,
-            "Demais Ativos": -11.0,
-            "Impostos": -3184.0,
+            "Demais Ativos": 11.0,
+            "Impostos": 3184.0,
             "MOB": 21408.0,
             "MOL": 15508.0,
-            "Oryp": -1073.0,
-            "PDD": -5900.0,
+            "Oryp": 1073.0,
+            "PDD": 5900.0,
             "PPTO_BAI": 8253.0,
             "PPTO_BDI": 5040.0,
-            "PPTO_Demais Ativos": -220.0,
+            "PPTO_Demais Ativos": 220.0,
             "PPTO_Eficiência": 29.0,
-            "PPTO_Impostos": -3213.0,
+            "PPTO_Impostos": 3213.0,
             "PPTO_MOB": 21926.0,
             "PPTO_MOL": 16014.0,
-            "PPTO_Oryp": -1093.0,
-            "PPTO_PDD": -5911.0,
+            "PPTO_Oryp": 1093.0,
+            "PPTO_PDD": 5911.0,
             "PPTO_Taxa Impositiva": 39.0,
-            "PPTO_Total Gastos": -6448.0,
+            "PPTO_Total Gastos": 6448.0,
             "RORWA": 6.2,
             "RWA": 80276.0,
-            "Total Gastos": -6565.0
+            "Total Gastos": 6565.0
         }
     },
     "Corporate": {
@@ -503,6 +546,17 @@
                 "Demais": 880.12,
                 "Hipotecas": 0.0,
                 "Internegócios": 0.0
+            },
+            "rwa": {
+                "Agro": 9186.0,
+                "Autos": 1321.0,
+                "Capital de Giro": 3330.0,
+                "Comex": 33518.0,
+                "Confirming": 3442.0,
+                "Conta Garantida": 1753.0,
+                "Demais": 5319.0,
+                "Hipotecas": 1307.0,
+                "Internegócios": 2155.0
             }
         },
         "comissoes": {
@@ -510,7 +564,7 @@
             "Capitalização": 10.0,
             "Cartões": 39.0,
             "Cash": 0.0,
-            "Demais": 916.0,
+            "Demais": 1478.0,
             "FX": 48.0,
             "Fiança": 498.0,
             "Mercado de Capitais": 264.0,
@@ -556,25 +610,25 @@
             "BAI": 5035.0,
             "BDI": 3315.0,
             "Demais Ativos": 0.0,
-            "Impostos": -1720.0,
+            "Impostos": 1720.0,
             "MOB": 6376.0,
             "MOL": 5797.0,
-            "Oryp": -20.0,
-            "PDD": -579.0,
+            "Oryp": 20.0,
+            "PDD": 579.0,
             "PPTO_BAI": 4987.0,
             "PPTO_BDI": 3300.0,
             "PPTO_Demais Ativos": 0.0,
             "PPTO_Eficiência": 13.0,
-            "PPTO_Impostos": -1687.0,
+            "PPTO_Impostos": 1687.0,
             "PPTO_MOB": 6302.0,
             "PPTO_MOL": 5809.0,
-            "PPTO_Oryp": -19.0,
-            "PPTO_PDD": -493.0,
+            "PPTO_Oryp": 19.0,
+            "PPTO_PDD": 493.0,
             "PPTO_Taxa Impositiva": 34.0,
-            "PPTO_Total Gastos": -803.0,
+            "PPTO_Total Gastos": 803.0,
             "RORWA": 4.4,
             "RWA": 99616.0,
-            "Total Gastos": -742.0
+            "Total Gastos": 742.0
         }
     },
     "SCIB": {
@@ -622,13 +676,24 @@
                 "Demais": 1415.67,
                 "Hipotecas": 0.0,
                 "Internegócios": 0.0
+            },
+            "rwa": {
+                "Agro": 1029.0,
+                "Autos": 238.0,
+                "Capital de Giro": 2237.0,
+                "Cartões": 88.0,
+                "Comex": 12667.0,
+                "Confirming": 3804.0,
+                "Demais": 3872.0,
+                "Hipotecas": 262.0,
+                "Internegócios": 12836.0
             }
         },
         "comissoes": {
             "Cash": 0.0,
             "Comex": 191.0,
             "Corretagem": 0.0,
-            "Demais": 565.0,
+            "Demais": 633.0,
             "FX": 0.0,
             "Fiança": 0.0,
             "Mercado de Capitais": 60.0
@@ -674,25 +739,25 @@
             "BAI": 6681.0,
             "BDI": 4518.0,
             "Demais Ativos": 0.0,
-            "Impostos": -2163.0,
+            "Impostos": 2163.0,
             "MOB": 9229.0,
             "MOL": 9120.0,
-            "Oryp": -19.0,
-            "PDD": -109.0,
+            "Oryp": 19.0,
+            "PDD": 109.0,
             "PPTO_BAI": 6669.0,
             "PPTO_BDI": 4842.0,
             "PPTO_Demais Ativos": 0.0,
             "PPTO_Eficiência": 25.0,
-            "PPTO_Impostos": -2232.0,
+            "PPTO_Impostos": 2232.0,
             "PPTO_MOB": 9113.0,
             "PPTO_MOL": 8998.0,
-            "PPTO_Oryp": -21.0,
-            "PPTO_PDD": -115.0,
+            "PPTO_Oryp": 21.0,
+            "PPTO_PDD": 115.0,
             "PPTO_Taxa Impositiva": 33.0,
-            "PPTO_Total Gastos": -2308.0,
+            "PPTO_Total Gastos": 2308.0,
             "RORWA": 4.52,
             "RWA": 122660.0,
-            "Total Gastos": -2420.0
+            "Total Gastos": 2420.0
         }
     },
     "Private": {
@@ -740,12 +805,23 @@
                 "Demais": 29.48,
                 "Hipotecas": 0.0,
                 "Internegócios": 0.0
+            },
+            "rwa": {
+                "Agro": 30.0,
+                "Autos": 520.0,
+                "CP": 14.0,
+                "Capital de Giro": 6.0,
+                "Cartões": 131.0,
+                "Comex": 1258.0,
+                "Demais": 34.0,
+                "Hipotecas": 703.0,
+                "Internegócios": 0.0
             }
         },
         "comissoes": {
             "Cartões": 32.0,
             "Comex": 0.0,
-            "Demais": 182.0,
+            "Demais": 208.0,
             "Esfera": 0.0,
             "FX": 526.0,
             "Fundos": 24.0,
@@ -790,25 +866,25 @@
             "BAI": 604.0,
             "BDI": 388.0,
             "Demais Ativos": 0.0,
-            "Impostos": -216.0,
+            "Impostos": 216.0,
             "MOB": 1130.0,
             "MOL": 1126.0,
-            "Oryp": -2.0,
-            "PDD": -4.0,
+            "Oryp": 2.0,
+            "PDD": 4.0,
             "PPTO_BAI": 607.0,
             "PPTO_BDI": 392.0,
             "PPTO_Demais Ativos": 0.0,
             "PPTO_Eficiência": 44.0,
-            "PPTO_Impostos": -215.0,
+            "PPTO_Impostos": 215.0,
             "PPTO_MOB": 1124.0,
             "PPTO_MOL": 1109.0,
-            "PPTO_Oryp": -2.0,
-            "PPTO_PDD": -15.0,
+            "PPTO_Oryp": 2.0,
+            "PPTO_PDD": 15.0,
             "PPTO_Taxa Impositiva": 35.0,
-            "PPTO_Total Gastos": -500.0,
+            "PPTO_Total Gastos": 500.0,
             "RORWA": 6.71,
             "RWA": 6890.0,
-            "Total Gastos": -520.0
+            "Total Gastos": 520.0
         }
     },
     "Consumer": {
@@ -824,7 +900,7 @@
                 "Demais": 48.3
             },
             "provisao": {
-                "Autos": -3891.0,
+                "Autos": 3891.0,
                 "CP": 0.0,
                 "Demais": 0.0
             },
@@ -832,10 +908,15 @@
                 "Autos": 5045.0,
                 "CP": 185.0,
                 "Demais": 334.51
+            },
+            "rwa": {
+                "Autos": 49758.0,
+                "CP": 796.0,
+                "Demais": 1234.0
             }
         },
         "comissoes": {
-            "Demais": -39.0,
+            "Demais": 133.0,
             "Seguros Open": 0.0,
             "Seguros Related": 0.0,
             "Tarifas de Crédito": 0.0
@@ -860,51 +941,51 @@
             "BAI": 2013.0,
             "BDI": 1210.0,
             "Demais Ativos": 0.0,
-            "Impostos": -803.0,
+            "Impostos": 803.0,
             "MOB": 7218.0,
             "MOL": 3468.0,
-            "Oryp": -307.0,
-            "PDD": -3751.0,
+            "Oryp": 307.0,
+            "PDD": 3751.0,
             "PPTO_BAI": 2012.0,
             "PPTO_BDI": 1161.0,
             "PPTO_Demais Ativos": 0.0,
             "PPTO_Eficiência": 16.0,
-            "PPTO_Impostos": -851.0,
+            "PPTO_Impostos": 851.0,
             "PPTO_MOB": 7268.0,
             "PPTO_MOL": 3457.0,
-            "PPTO_Oryp": -297.0,
-            "PPTO_PDD": -3811.0,
+            "PPTO_Oryp": 297.0,
+            "PPTO_PDD": 3811.0,
             "PPTO_Taxa Impositiva": 42.0,
-            "PPTO_Total Gastos": -1148.0,
+            "PPTO_Total Gastos": 1148.0,
             "RORWA": 2.21,
             "RWA": 70232.0,
-            "Total Gastos": -1148.0
+            "Total Gastos": 1148.0
         }
     },
     "Total": {
         "cascada": {
-            "BAI": 25842,
-            "BDI": 15580,
-            "Demais Ativos": -314,
-            "Impostos": -10607,
-            "MOB": 81922,
-            "MOL": 55393,
-            "Oryp": -3107,
-            "PDD": -26529,
-            "PPTO_BAI": 27120,
-            "PPTO_BDI": 16480,
-            "PPTO_Demais Ativos": -548,
+            "BAI": 25842.0,
+            "BDI": 15580.0,
+            "Demais Ativos": 314.0,
+            "Impostos": 10607.0,
+            "MOB": 81922.0,
+            "MOL": 55393.0,
+            "Oryp": 3107.0,
+            "PDD": 26529.0,
+            "PPTO_BAI": 27120.0,
+            "PPTO_BDI": 16480.0,
+            "PPTO_Demais Ativos": 548.0,
             "PPTO_Eficiência": 0.31,
-            "PPTO_Impostos": -10640,
-            "PPTO_MOB": 82847,
-            "PPTO_MOL": 56498,
-            "PPTO_Oryp": -3130,
-            "PPTO_PDD": -26349,
+            "PPTO_Impostos": 10640.0,
+            "PPTO_MOB": 82847.0,
+            "PPTO_MOL": 56498.0,
+            "PPTO_Oryp": 3130.0,
+            "PPTO_PDD": 26349.0,
             "PPTO_Taxa Impositiva": 0.39,
-            "PPTO_Total Gastos": -25700,
-            "RORWA": 0.0308,
-            "RWA": 600644,
-            "Total Gastos": -26129
+            "PPTO_Total Gastos": 25700.0,
+            "RORWA": 0.03,
+            "RWA": 600644.0,
+            "Total Gastos": 26129.0
         }
     }
 }

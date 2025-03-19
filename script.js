@@ -41,12 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Estruturas de dados para armazenar informações
   // Dados de P&L (gerais e por segmento)
   let plDataTotal = {};
+  let plDataTotalPPTO = {}; 
   let indicadoresTotal = {};
   const segmentPLData = {};
+  const segmentPLDataPPTO = {};
   const segmentIndicadores = {};
-
-  let plDataTotalPPTO = {}; // Adicionar esta linha
-  const segmentPLDataPPTO = {}; // Adicionar esta linha
   
 
   // Dados de carteiras, spreads etc.
@@ -129,39 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
       RORWA: { real: 0, simulado: 0, atingimentoReal: 0, atingimentoSimulado: 0 }
     };
     
-    // Preencher dados segmentados
-    // segments.forEach(segment => {
-    //   // Inicializar objetos se não existirem
-    //   if (!segmentPLData[segment]) segmentPLData[segment] = {};
-    //   if (!segmentIndicadores[segment]) segmentIndicadores[segment] = {};
-      
-    //   const factor = segment === 'Especial' ? 0.25 : 
-    //                 segment === 'Prospera' ? 0.15 : 
-    //                 segment === 'Select' ? 0.2 : 
-    //                 segment === 'PJ' ? 0.15 : 
-    //                 segment === 'Corporate' ? 0.1 : 
-    //                 segment === 'SCIB' ? 0.05 : 
-    //                 segment === 'Private' ? 0.07 : 0.03;
-      
-    //   Object.keys(plDataTotal).forEach(key => {
-    //     segmentPLData[segment][key] = {
-    //       real: plDataTotal[key].real * factor,
-    //       simulado: plDataTotal[key].simulado * factor,
-    //       atingimentoReal: plDataTotal[key].atingimentoReal * 0.98,
-    //       atingimentoSimulado: plDataTotal[key].atingimentoSimulado * 0.98
-    //     };
-    //   });
-      
-    //   Object.keys(indicadoresTotal).forEach(key => {
-    //     segmentIndicadores[segment][key] = {
-    //       real: indicadoresTotal[key].real,
-    //       simulado: indicadoresTotal[key].simulado,
-    //       atingimentoReal: indicadoresTotal[key].atingimentoReal * 0.98,
-    //       atingimentoSimulado: indicadoresTotal[key].atingimentoSimulado * 0.98
-    //     };
-    //   });
-    // });
-    
     console.log("Dados padrão preenchidos com sucesso.");
   }
 
@@ -235,11 +201,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Para cada tipo de crédito no JSON, mapear para nossas estruturas
             Object.keys(creditData.carteira || {}).forEach(tipoCredito => {
               dadosPlanilha.credito[segment][tipoCredito] = {
-                carteira: creditData.carteira[tipoCredito] || 0,
-                spread: creditData.spread[tipoCredito] || 0,
-                provisao: creditData.provisao[tipoCredito] || 0,
-                margem: creditData.margem[tipoCredito] || 0,
-                rwa: creditData.rwa[tipoCredito] || 0
+                carteira: creditData.carteira && creditData.carteira[tipoCredito] !== undefined 
+                  ? creditData.carteira[tipoCredito] : 0,
+                spread: creditData.spread && creditData.spread[tipoCredito] !== undefined 
+                  ? creditData.spread[tipoCredito] : 0,
+                provisao: creditData.provisao && creditData.provisao[tipoCredito] !== undefined 
+                  ? creditData.provisao[tipoCredito] : 0,
+                margem: creditData.margem && creditData.margem[tipoCredito] !== undefined 
+                  ? creditData.margem[tipoCredito] : 0,
+                rwa: creditData.rwa && creditData.rwa[tipoCredito] !== undefined 
+                  ? creditData.rwa[tipoCredito] : 0
               };
             });
           }
@@ -352,6 +323,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 atingimentoReal: 100,
                 atingimentoSimulado: 100
               };
+            }
+
+            // Carregar RWA e RORWA da cascada
+            if (data[segment].cascada) {
+              if (data[segment].cascada.RWA !== undefined) {
+                segmentIndicadores[segment].RWA = {
+                  real: data[segment].cascada.RWA,
+                  simulado: data[segment].cascada.RWA,
+                  atingimentoReal: "-",
+                  atingimentoSimulado: "-"
+                };
+              }
+              
+              if (data[segment].cascada.RORWA !== undefined) {
+                segmentIndicadores[segment].RORWA = {
+                  real: data[segment].cascada.RORWA,
+                  simulado: data[segment].cascada.RORWA,
+                  atingimentoReal: "-",
+                  atingimentoSimulado: "-"
+                };
+              }
             }
           }
           
@@ -503,8 +495,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
- // Modificação para a função loadCreditData
- function loadCreditData(segment) {
+// Função para carregar dados de crédito
+function loadCreditData(segment) {
   const creditBody = document.getElementById('credito-body');
   if (!creditBody) {
     console.error("Elemento 'credito-body' não encontrado!");
@@ -538,9 +530,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const spreadSimulado = ajustes[segment].credito[`${tipo}_spreadSimulado`] || data.spread;
     const provisaoSimulada = ajustes[segment].credito[`${tipo}_provisaoSimulada`] || data.provisao;
 
-    const margemSimulada = ajustes[segment].credito[`${tipo}_margemSimulada`] || data.margem;
-    const rwaSimulado = ajustes[segment].credito[`${tipo}_rwaSimulado`] || data.rwa;
-
+    // Calcular margem simulada e RWA simulado baseado nas fórmulas
+    const margemSimulada = calcularMargemSimulada(data.carteira, data.margem, carteiraSimulada);
+    const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
     
     row.innerHTML = `
       <td>${tipo}</td>
@@ -551,9 +543,9 @@ document.addEventListener('DOMContentLoaded', function() {
       <td>${formatNumber(data.provisao)}</td>
       <td><input type="number" class="provisao-simulada" value="${provisaoSimulada}" data-tipo="${tipo}" data-campo="provisaoSimulada"></td>
       <td>${formatNumber(data.margem)}</td>
-      <td><input type="number" class="margem-simulada" value="${margemSimulada}" data-tipo="${tipo}" data-campo="margemSimulada"></td>
+      <td><span class="margem-simulada-value">${formatNumber(margemSimulada)}</span></td>
       <td>${formatNumber(data.rwa)}</td>
-      <td><input type="number" class="rwa-simulado" value="${rwaSimulado}" data-tipo="${tipo}" data-campo="rwaSimulado"></td>
+      <td><span class="rwa-simulado-value">${formatNumber(rwaSimulado)}</span></td>
     `;
     
     creditBody.appendChild(row);
@@ -568,6 +560,19 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 }
 
+// Função para calcular a margem simulada
+function calcularMargemSimulada(carteiraReal, margemReal, carteiraSimulada) {
+  // return carteiraSimulada * (spreadSimulado / 100);
+  return (margemReal / carteiraReal) * carteiraSimulada;
+}
+
+// Função para calcular o RWA simulado
+function calcularRWASimulado(rwaReal, carteiraReal, carteiraSimulada) {
+  if (carteiraReal === 0) return 0;
+  return (rwaReal / carteiraReal) * carteiraSimulada;
+}
+
+// Função para atualizar valores simulados
 function updateCreditSimulatedValues(event, segment) {
   const input = event.target;
   const tipo = input.getAttribute('data-tipo');
@@ -577,12 +582,58 @@ function updateCreditSimulatedValues(event, segment) {
   // Salvar o valor no objeto de ajustes
   ajustes[segment].credito[`${tipo}_${campo}`] = valor;
   
+  // Obter a linha da tabela
+  const row = input.closest('tr');
+  if (!row) return;
+  
+  // Obter os dados reais
+  const data = dadosPlanilha.credito[segment][tipo] || {
+    carteira: 0,
+    spread: 0,
+    provisao: 0,
+    margem: 0,
+    rwa: 0
+  };
+  
+  // Recuperar valores atuais
+  const carteiraSimulada = parseFloat(ajustes[segment].credito[`${tipo}_carteiraSimulada`] || data.carteira);
+  const spreadSimulado = parseFloat(ajustes[segment].credito[`${tipo}_spreadSimulado`] || data.spread);
+  
+  // Calcular novos valores
+  const margemSimulada = calcularMargemSimulada(data.carteira, data.margem, carteiraSimulada);
+  const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
+  
+  // Atualizar os valores calculados na interface
+  const margemSimuladaElement = row.querySelector('.margem-simulada-value');
+  const rwaSimuladoElement = row.querySelector('.rwa-simulado-value');
+  
+  if (margemSimuladaElement) {
+    margemSimuladaElement.textContent = formatNumber(margemSimulada);
+  }
+  
+  if (rwaSimuladoElement) {
+    rwaSimuladoElement.textContent = formatNumber(rwaSimulado);
+  }
+  
   // Atualizar a lista de ajustes realizados
   atualizarAjustesRealizados();
-  
-  // Aqui você poderia adicionar lógica para atualizar cálculos derivados
-  // se necessário, mas NÃO para atualizar o próprio campo de input
 }
+
+// function updateCreditSimulatedValues(event, segment) {
+//   const input = event.target;
+//   const tipo = input.getAttribute('data-tipo');
+//   const campo = input.getAttribute('data-campo');
+//   const valor = parseFloat(input.value) || 0;
+  
+//   // Salvar o valor no objeto de ajustes
+//   ajustes[segment].credito[`${tipo}_${campo}`] = valor;
+  
+//   // Atualizar a lista de ajustes realizados
+//   atualizarAjustesRealizados();
+  
+//   // Aqui você poderia adicionar lógica para atualizar cálculos derivados
+//   // se necessário, mas NÃO para atualizar o próprio campo de input
+// }
 
 // Modificação para updateCreditSimulatedValues - remova a chave de fechamento extra
 // function updateCreditSimulatedValues(event, segment) {
@@ -1141,7 +1192,7 @@ function updateCreditSimulatedValues(event, segment) {
     // Verificar se há tipos de captação para este segmento
     const tiposCaptacao = fundingTypes[segment] || [];
     if (tiposCaptacao.length === 0) {
-      captacoesBody.innerHTML = '<tr><td colspan="4" style="text-align: center">Não há dados de captação para este segmento</td></tr>';
+      captacoesBody.innerHTML = '<tr><td colspan="7" style="text-align: center">Não há dados de captação para este segmento</td></tr>';
       return;
     }
     
@@ -1159,7 +1210,9 @@ function updateCreditSimulatedValues(event, segment) {
       // Recuperar valores simulados
       const carteiraSimulada = ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira;
       const spreadSimulado = ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || data.spread;
-      const margemSimulada = ajustes[segment].captacoes[`${tipo}_margemSimulada`] || data.margem;
+      
+      // Calcular margem simulada baseada na fórmula: Carteira Simulada * Spread Simulado
+      const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
       
       row.innerHTML = `
         <td>${tipo}</td>
@@ -1168,7 +1221,7 @@ function updateCreditSimulatedValues(event, segment) {
         <td>${data.spread}%</td>
         <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
         <td>${formatNumber(data.margem)}</td>
-        <td><input type="number" class="margem-simulada" value="${margemSimulada}" data-tipo="${tipo}" data-campo="margemSimulada"></td>
+        <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
       `;
       
       captacoesBody.appendChild(row);
@@ -1183,58 +1236,44 @@ function updateCreditSimulatedValues(event, segment) {
     });
   }
   
-  // function updateFundingSimulatedValues(event, segment) {
-  //   const input = event.target;
-  //   const row = input.closest('tr');
-  //   if (!row) return;
-    
-  //   const tipo = input.getAttribute('data-tipo');
-  //   const campo = input.getAttribute('data-campo');
-  //   const valor = parseFloat(input.value) || 0;
-    
-  //   // Salvar o valor simulado
-  //   ajustes[segment].captacoes[`${tipo}_${campo}`] = valor;
-    
-  //   // Atualizar a lista de ajustes realizados
-  //   atualizarAjustesRealizados();
-  // }
+  // Função para calcular a margem simulada para captações
+  function calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado) {
+    return carteiraSimulada * (spreadSimulado / 100);
+  }
   
-  // E a função de atualização:
+  // Função para atualizar valores simulados de captação
   function updateFundingSimulatedValues(event, segment) {
     const input = event.target;
-    const row = input.closest('tr');
-    if (!row) return;
-    
     const tipo = input.getAttribute('data-tipo');
     const campo = input.getAttribute('data-campo');
     const valor = parseFloat(input.value) || 0;
     
-    // Salvar o ajuste
+    // Salvar o valor no objeto de ajustes
     ajustes[segment].captacoes[`${tipo}_${campo}`] = valor;
     
-    try {
-      if (campo === 'carteira') {
-        const realValueCell = row.cells[1];
-        const simulatedValueCell = row.cells[3];
-        
-        if (realValueCell && simulatedValueCell) {
-          const realValueText = realValueCell.textContent || '0';
-          const realValue = parseFloat(realValueText.replace(/\./g, '').replace(',', '.')) || 0;
-          const simulatedValue = realValue + valor;
-          simulatedValueCell.textContent = formatNumber(simulatedValue);
-        }
-      } 
-      else if (campo === 'spreadSimulado') {
-        // O div com a classe input-with-percent está na célula 4
-        const simulatedValueCell = row.cells[4].querySelector('.input-with-percent');
-        
-        if (simulatedValueCell) {
-          // Atualiza o valor do input dentro do div
-          simulatedValueCell.querySelector('input').value = valor.toFixed(2);
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar valores simulados de captação:", error);
+    // Obter a linha da tabela
+    const row = input.closest('tr');
+    if (!row) return;
+    
+    // Obter os dados reais
+    const data = dadosPlanilha.captacoes[segment][tipo] || {
+      carteira: 0,
+      spread: 0,
+      margem: 0
+    };
+    
+    // Recuperar valores atuais
+    const carteiraSimulada = parseFloat(ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira);
+    const spreadSimulado = parseFloat(ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || data.spread);
+    
+    // Calcular nova margem simulada
+    const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
+    
+    // Atualizar o valor calculado na interface
+    const margemSimuladaElement = row.querySelector('.margem-simulada-value');
+    
+    if (margemSimuladaElement) {
+      margemSimuladaElement.textContent = formatNumber(margemSimulada);
     }
     
     // Atualizar a lista de ajustes realizados
