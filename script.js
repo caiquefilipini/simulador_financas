@@ -1011,6 +1011,12 @@ function atualizarCascadaEInterface(segment) {
   loadIndicadoresData(modoVisualizacao);
 }
 
+// Função para calcular provisão simulada baseada em alteração da carteira
+function calcularProvisaoSimulada(provisaoReal, carteiraReal, carteiraSimulada) {
+  if (carteiraReal === 0) return 0;
+  return (provisaoReal / carteiraReal) * carteiraSimulada;
+}
+
 // Exemplo de como integrar com os event listeners existentes
 function updateCreditSimulatedValues(event, segment) {
   const input = event.target;
@@ -1033,6 +1039,25 @@ function updateCreditSimulatedValues(event, segment) {
     margem: 0,
     rwa: 0
   };
+
+    // Se o campo alterado foi a Carteira Simulada, atualizar automaticamente a Provisão Simulada
+    if (campo === 'carteiraSimulada') {
+      const provisaoReal = data.provisao;
+      const carteiraReal = data.carteira;
+      const carteiraSimulada = valor;
+      
+      // Calcular nova provisão simulada proporcional à alteração da carteira
+      const provisaoSimulada = calcularProvisaoSimulada(provisaoReal, carteiraReal, carteiraSimulada);
+      
+      // Atualizar o valor no objeto de ajustes
+      ajustes[segment].credito[`${tipo}_provisaoSimulada`] = provisaoSimulada;
+      
+      // Atualizar o input de provisão simulada na interface
+      const provisaoSimuladaInput = row.querySelector('.provisao-simulada');
+      if (provisaoSimuladaInput) {
+        provisaoSimuladaInput.value = provisaoSimulada.toFixed(0);
+      }
+    }
   
   // Recuperar valores atuais
   const carteiraSimulada = parseFloat(ajustes[segment].credito[`${tipo}_carteiraSimulada`] || data.carteira);
