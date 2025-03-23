@@ -2,7 +2,6 @@
 import { fundingTypes } from '../config.js';
 import { appState } from '../models/dataModels.js';
 import { 
-  calcularSpreadCaptacoesBaseadoEmMargem, 
   calcularMargemSimuladaCaptacoes,
   calcularCascadaSimulado
 } from '../models/calculationModels.js';
@@ -38,34 +37,56 @@ export function loadFundingData(segment) {
       margem: 0,
     };
     
-    // Verificar se é o tipo "Demais" para calcular o spread baseado na margem
-    let spreadReal = data.spread;
-    if (tipo === 'Demais') {
-      spreadReal = calcularSpreadCaptacoesBaseadoEmMargem(segment, tipo);
+    // Verificar se é o tipo "Demais"
+    const isDemais = tipo === 'Demais';
+    
+    // Para o tipo "Demais", vamos garantir que os valores simulados sejam iguais aos reais
+    // e que os campos sejam desabilitados
+    if (isDemais) {
+      // Valores simulados iguais aos reais
+      const carteiraSimulada = data.carteira;
+      const spreadSimulado = data.spread;
+      
+      // Margem simulada igual à real
+      const margemSimulada = data.margem;
+      
+      // Criar HTML com campos desabilitados (readonly)
+      row.innerHTML = `
+        <td>${tipo}</td>
+        <td>${formatNumber(data.carteira)}</td>
+        <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada" readonly disabled style="background-color: #f0f0f0;"></td>
+        <td>${spreadSimulado.toFixed(2)}%</td>
+        <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado.toFixed(2)}" data-tipo="${tipo}" data-campo="spreadSimulado" readonly disabled style="background-color: #f0f0f0;"><span class="percent-sign">%</span></div></td>
+        <td>${formatNumber(data.margem)}</td>
+        <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
+      `;
+    } else {
+      // Para outros tipos, manter o comportamento normal
+      let spreadReal = data.spread;
+      
+      // Recuperar valores simulados
+      const carteiraSimulada = appState.ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira;
+      const spreadSimulado = appState.ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || spreadReal;
+      
+      // Calcular margem simulada baseada na fórmula
+      const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
+      
+      row.innerHTML = `
+        <td>${tipo}</td>
+        <td>${formatNumber(data.carteira)}</td>
+        <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
+        <td>${spreadReal.toFixed(2)}%</td>
+        <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado.toFixed(2)}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
+        <td>${formatNumber(data.margem)}</td>
+        <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
+      `;
     }
-    
-    // Recuperar valores simulados
-    const carteiraSimulada = appState.ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || data.carteira;
-    const spreadSimulado = appState.ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || spreadReal;
-    
-    // Calcular margem simulada baseada na fórmula: Carteira Simulada * Spread Simulado
-    const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
-    
-    row.innerHTML = `
-      <td>${tipo}</td>
-      <td>${formatNumber(data.carteira)}</td>
-      <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
-      <td>${spreadReal}%</td>
-      <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
-      <td>${formatNumber(data.margem)}</td>
-      <td><span class="margem-simulada-value campo-calculado">${formatNumber(margemSimulada)}</span></td>
-    `;
     
     captacoesBody.appendChild(row);
   });
   
-  // Adicionar event listeners
-  const inputs = captacoesBody.querySelectorAll('input');
+  // Adicionar event listeners apenas para linhas que não são "Demais"
+  const inputs = captacoesBody.querySelectorAll('input:not([disabled])');
   inputs.forEach(input => {
     input.addEventListener('input', function(event) {
       updateFundingSimulatedValues(event, segment);

@@ -70,29 +70,23 @@ export function calcularCascadaSimulado(segment) {
       const ajustes = appState.ajustes?.[segmento]?.credito || {};
       
       // Valores reais
-      // const carteiraReal = data.carteira || 0;
-      // const spreadReal = data.spread || 0;
+      const carteiraReal = data.carteira || 0;
+      const spreadReal = data.spread || 0;
       const provisaoReal = data.provisao || 0;
       const margemReal = data.margem || 0;
       const rwaReal = data.rwa || 0;
       
       // Valores simulados
-      // const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
-      // const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
+      const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
+        parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
+      const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
+        parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
       const provisaoSimulada = ajustes[`${tipo}_provisaoSimulada`] !== undefined ? 
         parseFloat(ajustes[`${tipo}_provisaoSimulada`]) : provisaoReal;
-
-      const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
-
-      const rwaSimulado = ajustes[`${tipo}_rwaSimulado`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_rwaSimulado`]) : rwaReal;
       
       // Calcular margem e RWA simulados
-      // const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
-      // const rwaSimulado = calcularRWASimulado(rwaReal, carteiraReal, carteiraSimulada);
+      const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
+      const rwaSimulado = calcularRWASimulado(rwaReal, carteiraReal, carteiraSimulada);
       
       // Acumular somas
       somaPDDReais += provisaoReal;
@@ -110,21 +104,18 @@ export function calcularCascadaSimulado(segment) {
       const ajustes = appState.ajustes?.[segmento]?.captacoes || {};
       
       // Valores reais
-      // const carteiraReal = data.carteira || 0;
-      // const spreadReal = data.spread || 0;
+      const carteiraReal = data.carteira || 0;
+      const spreadReal = data.spread || 0;
       const margemReal = data.margem || 0;
       
       // Valores simulados
-      // const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
-      // const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
-
-      const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
+      const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
+        parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
+      const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
+        parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
       
       // Calcular margem simulada
-      // const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
+      const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
       
       // Acumular somas
       somaMargensCaptacoes += margemReal;
@@ -334,11 +325,11 @@ export function consolidarValoresTotal() {
       const mobValue = cascadaOriginalTotal.MOB || 0;
       const totalGastos = cascadaOriginalTotal["Total Gastos"] || 0;
       
-      // appState.indicadoresTotal["Taxa Impositiva"].simulado = 
-      //   baiValue !== 0 ? (impostos / baiValue) * 100 : 0;
+      appState.indicadoresTotal["Taxa Impositiva"].simulado = 
+        baiValue !== 0 ? (impostos / baiValue) * 100 : 0;
       
-      // appState.indicadoresTotal["Eficiência"].simulado = 
-      //   mobValue !== 0 ? (totalGastos / mobValue) * 100 : 0;
+      appState.indicadoresTotal["Eficiência"].simulado = 
+        mobValue !== 0 ? (totalGastos / mobValue) * 100 : 0;
     }
   } else {
     console.log("Ajustes detectados, calculando valores consolidados para o Total");
@@ -410,26 +401,26 @@ export function consolidarValoresTotal() {
   }
   
   // Calcular % PPTO (mesmo para ambos os casos)
-  // const cascadaPPTO = appState.data?.Total?.cascada_ppto;
-  // if (cascadaPPTO) {
-  //   if (cascadaPPTO.PPTO_MOB) 
-  //     appState.plDataTotal.MOB.atingimentoSimulado = (appState.plDataTotal.MOB.simulado / cascadaPPTO.PPTO_MOB) * 100;
+  const cascadaPPTO = appState.data?.Total?.cascada_ppto;
+  if (cascadaPPTO) {
+    if (cascadaPPTO.PPTO_MOB) 
+      appState.plDataTotal.MOB.atingimentoSimulado = (appState.plDataTotal.MOB.simulado / cascadaPPTO.PPTO_MOB) * 100;
     
-  //   if (cascadaPPTO.PPTO_PDD) 
-  //     appState.plDataTotal.PDD.atingimentoSimulado = (appState.plDataTotal.PDD.simulado / cascadaPPTO.PPTO_PDD) * 100;
+    if (cascadaPPTO.PPTO_PDD) 
+      appState.plDataTotal.PDD.atingimentoSimulado = (appState.plDataTotal.PDD.simulado / cascadaPPTO.PPTO_PDD) * 100;
     
-  //   if (cascadaPPTO.PPTO_MOL) 
-  //     appState.plDataTotal.MOL.atingimentoSimulado = (appState.plDataTotal.MOL.simulado / cascadaPPTO.PPTO_MOL) * 100;
+    if (cascadaPPTO.PPTO_MOL) 
+      appState.plDataTotal.MOL.atingimentoSimulado = (appState.plDataTotal.MOL.simulado / cascadaPPTO.PPTO_MOL) * 100;
     
-  //   if (cascadaPPTO.PPTO_BAI) 
-  //     appState.plDataTotal.BAI.atingimentoSimulado = (appState.plDataTotal.BAI.simulado / cascadaPPTO.PPTO_BAI) * 100;
+    if (cascadaPPTO.PPTO_BAI) 
+      appState.plDataTotal.BAI.atingimentoSimulado = (appState.plDataTotal.BAI.simulado / cascadaPPTO.PPTO_BAI) * 100;
     
-  //   if (cascadaPPTO.PPTO_Impostos) 
-  //     appState.plDataTotal.Impostos.atingimentoSimulado = (appState.plDataTotal.Impostos.simulado / cascadaPPTO.PPTO_Impostos) * 100;
+    if (cascadaPPTO.PPTO_Impostos) 
+      appState.plDataTotal.Impostos.atingimentoSimulado = (appState.plDataTotal.Impostos.simulado / cascadaPPTO.PPTO_Impostos) * 100;
     
-  //   if (cascadaPPTO.PPTO_BDI) 
-  //     appState.plDataTotal.BDI.atingimentoSimulado = (appState.plDataTotal.BDI.simulado / cascadaPPTO.PPTO_BDI) * 100;
-  // }
+    if (cascadaPPTO.PPTO_BDI) 
+      appState.plDataTotal.BDI.atingimentoSimulado = (appState.plDataTotal.BDI.simulado / cascadaPPTO.PPTO_BDI) * 100;
+  }
   
   console.log("Valores do Total atualizados com sucesso");
   

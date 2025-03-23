@@ -3,7 +3,11 @@ import { appState } from '../models/dataModels.js';
 import { formatNumber } from '../utils/formatters.js';
 
 // Carrega os dados de P&L para exibição na tabela
+// Versão corrigida da função loadPLData em plUI.js
+
 export function loadPLData(segment = 'total') {
+  console.log(`Carregando dados de P&L para: ${segment}`);
+  
   const plBody = document.getElementById('pl-body');
   if (!plBody) {
     console.error("Elemento 'pl-body' não encontrado!");
@@ -14,14 +18,22 @@ export function loadPLData(segment = 'total') {
   
   // Determinar quais dados usar
   let dataToUse;
-  let pptoData;
+  let pptoData = {};
   
   if (segment === 'total') {
     dataToUse = appState.plDataTotal;
     
-    // Usar o objeto de PPTO para Total do JSON carregado
-    if (appState.data && appState.data.Total && appState.data.Total.cascada) {
-      pptoData = appState.data.Total.cascada;
+    // Dados de PPTO para cálculo de atingimento
+    if (appState.data && appState.data.Total && appState.data.Total.cascada_ppto) {
+      // Extrair valores do PPTO removendo o prefixo "PPTO_"
+      Object.keys(appState.data.Total.cascada_ppto).forEach(key => {
+        const metricaKey = key.replace('PPTO_', '');
+        pptoData[metricaKey] = appState.data.Total.cascada_ppto[key];
+      });
+      
+      console.log("Dados PPTO carregados para Total:", pptoData);
+    } else {
+      console.warn("Dados de PPTO para Total não encontrados");
     }
     
     // Atualizar botão de visualização
@@ -30,9 +42,17 @@ export function loadPLData(segment = 'total') {
   } else {
     dataToUse = appState.segmentPLData[segment];
     
-    // Usar o objeto de PPTO para o segmento específico
-    if (appState.data && appState.data[segment] && appState.data[segment].cascada) {
-      pptoData = appState.data[segment].cascada;
+    // Dados de PPTO para cálculo de atingimento do segmento
+    if (appState.data && appState.data[segment] && appState.data[segment].cascada_ppto) {
+      // Extrair valores do PPTO removendo o prefixo "PPTO_"
+      Object.keys(appState.data[segment].cascada_ppto).forEach(key => {
+        const metricaKey = key.replace('PPTO_', '');
+        pptoData[metricaKey] = appState.data[segment].cascada_ppto[key];
+      });
+      
+      console.log(`Dados PPTO carregados para ${segment}:`, pptoData);
+    } else {
+      console.warn(`Dados de PPTO para segmento ${segment} não encontrados`);
     }
     
     // Atualizar botão de visualização
@@ -59,7 +79,7 @@ export function loadPLData(segment = 'total') {
   console.log('Dados do P&L sendo carregados:', {
     segment: segment,
     dataToUse: dataToUse,
-    pdd: dataToUse.PDD
+    pptoData: pptoData
   });
   
   Object.entries(dataToUse).forEach(([key, data]) => {
@@ -68,30 +88,48 @@ export function loadPLData(segment = 'total') {
     if (key === 'MOL' || key === 'BAI' || key === 'BDI') {
       row.classList.add('highlight');
     }
-
-    // Durante a iteração, adicione um log específico para o PDD
-    if (key === 'PDD') {
-        console.log('Renderizando PDD:', {
-        real: data.real,
-        simulado: data.simulado
-        });
-    }
     
-    // Obter o valor do PPTO para este campo
-    let pptoValue = 0;
-    if (pptoData) {
-      const pptoKey = "PPTO_" + key;
-      pptoValue = pptoData[pptoKey] || 0;
+    // Obter o valor do PPTO diretamente do objeto pptoData (sem prefixo "PPTO_")
+    const pptoValue = pptoData[key] || 0;
+    
+    // Log para debug do PPTO
+    if (key === 'MOB' || key === 'PDD' || key === 'MOL' || key === 'BAI' || key === 'BDI') {
+      console.log(`PPTO para ${key}:`, {
+        real: data.real,
+        ppto: pptoValue,
+        atingimento: pptoValue ? ((data.real / pptoValue) * 100).toFixed(1) + "%" : "-"
+      });
     }
     
     // Calcular % PPTO
     const pptoRealPercentage = calculatePPTOPercentage(data.real, pptoValue);
     const pptoSimuladoPercentage = calculatePPTOPercentage(data.simulado, pptoValue);
+
+// Dentro da função loadPLData onde os valores são exibidos
+// const realRounded = Math.round(parseFloat(data.real || 0));
+// const simuladoRounded = Math.round(parseFloat(data.simulado || 0));
+
+// row.innerHTML = `
+//   <td>${key}</td>
+//   <td>${formatNumber(realRounded)}</td>
+//   <td>${formatNumber(simuladoRounded)}</td>
+//   <td>${pptoRealPercentage === "-" ? "-" : pptoRealPercentage + "%"}</td>
+//   <td>${pptoSimuladoPercentage === "-" ? "-" : pptoSimuladoPercentage + "%"}</td>
+// `;
+
+
+    // Garantir que os valores numéricos são tratados como números
+    // const realValue = typeof data.real === 'number' ? data.real : parseFloat(data.real || 0);
+    // const simuladoValue = typeof data.simulado === 'number' ? data.simulado : parseFloat(data.simulado || 0);
+    
+    // Arredondar para inteiros
+    const realRounded = Math.round(parseFloat(data.real || 0));
+    const simuladoRounded = Math.round(parseFloat(data.simulado || 0));
     
     row.innerHTML = `
       <td>${key}</td>
-      <td>${formatNumber(data.real)}</td>
-      <td>${formatNumber(data.simulado)}</td>
+      <td>${formatNumber(realRounded)}</td>
+      <td>${formatNumber(simuladoRounded)}</td>
       <td>${pptoRealPercentage === "-" ? "-" : pptoRealPercentage + "%"}</td>
       <td>${pptoSimuladoPercentage === "-" ? "-" : pptoSimuladoPercentage + "%"}</td>
     `;

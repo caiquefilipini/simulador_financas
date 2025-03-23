@@ -5,6 +5,7 @@ import { formatNumber } from '../utils/formatters.js';
 import { loadCreditData } from './creditUI.js';
 import { loadFundingData } from './fundingUI.js';
 import { loadCommissionData } from './commissionUI.js';
+import { loadPLData, loadIndicadoresData } from './plUI.js';
 
 // Atualiza as listas de ajustes realizados
 export function atualizarAjustesRealizados() {
@@ -34,7 +35,7 @@ export function atualizarAjustesRealizados() {
           // Verificar carteira simulada
           const carteiraSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_carteiraSimulada`] || 0);
           const carteiraReal = appState.dadosPlanilha.credito[segment][tipo]?.carteira || 0;
-          if (carteiraSimulada !== 0 && carteiraSimulada !== carteiraReal) {
+          if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
             temAjusteCredito = true;
             const diferenca = carteiraSimulada - carteiraReal;
             adicionarItemAjuste('credito', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
@@ -43,16 +44,16 @@ export function atualizarAjustesRealizados() {
           // Verificar spread simulado
           const spreadSimulado = parseFloat(appState.ajustes[segment].credito[`${tipo}_spreadSimulado`] || 0);
           const spreadReal = appState.dadosPlanilha.credito[segment][tipo]?.spread || 0;
-          if (spreadSimulado !== 0 && spreadSimulado !== spreadReal) {
+          if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
             temAjusteCredito = true;
             const diferenca = spreadSimulado - spreadReal;
-            adicionarItemAjuste('credito', tipo, segment, 'Spread', diferenca, true, `${spreadReal}% → ${spreadSimulado}%`);
+            adicionarItemAjuste('credito', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
           }
           
           // Verificar provisão simulada
           const provisaoSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] || 0);
           const provisaoReal = appState.dadosPlanilha.credito[segment][tipo]?.provisao || 0;
-          if (provisaoSimulada !== 0 && provisaoSimulada !== provisaoReal) {
+          if (provisaoSimulada !== 0 && provisaoSimulada.toFixed(0) !== provisaoReal.toFixed(0)) {
             temAjusteCredito = true;
             const diferenca = provisaoSimulada - provisaoReal;
             adicionarItemAjuste('credito', tipo, segment, 'Provisão', diferenca, false, `${formatNumber(provisaoReal)} → ${formatNumber(provisaoSimulada)}`);
@@ -66,7 +67,7 @@ export function atualizarAjustesRealizados() {
           // Verificar carteira simulada
           const carteiraSimulada = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || 0);
           const carteiraReal = appState.dadosPlanilha.captacoes[segment][tipo]?.carteira || 0;
-          if (carteiraSimulada !== 0 && carteiraSimulada !== carteiraReal) {
+          if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
             temAjusteCaptacoes = true;
             const diferenca = carteiraSimulada - carteiraReal;
             adicionarItemAjuste('captacoes', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
@@ -75,10 +76,10 @@ export function atualizarAjustesRealizados() {
           // Verificar spread simulado
           const spreadSimulado = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || 0);
           const spreadReal = appState.dadosPlanilha.captacoes[segment][tipo]?.spread || 0;
-          if (spreadSimulado !== 0 && spreadSimulado !== spreadReal) {
+          if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
             temAjusteCaptacoes = true;
             const diferenca = spreadSimulado - spreadReal;
-            adicionarItemAjuste('captacoes', tipo, segment, 'Spread', diferenca, true, `${spreadReal}% → ${spreadSimulado}%`);
+            adicionarItemAjuste('captacoes', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
           }
         });
       }
@@ -89,7 +90,7 @@ export function atualizarAjustesRealizados() {
           // Verificar valor simulado
           const valorSimulado = parseFloat(appState.ajustes[segment].comissoes[`${tipo}_valorSimulado`] || 0);
           const valorReal = appState.dadosPlanilha.comissoes[segment][tipo]?.valor || 0;
-          if (valorSimulado !== 0 && valorSimulado !== valorReal) {
+          if (valorSimulado !== 0 && valorSimulado.toFixed(0) !== valorReal.toFixed(0)) {
             temAjusteComissoes = true;
             const diferenca = valorSimulado - valorReal;
             adicionarItemAjuste('comissoes', tipo, segment, 'Valor', diferenca, false, `${formatNumber(valorReal)} → ${formatNumber(valorSimulado)}`);
@@ -155,53 +156,76 @@ function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentu
 // Configura os botões de ação (Limpar Ajustes, Otimizar, etc.)
 // Modifique apenas a função setupActionButtons em adjustmentsUI.js
 
+// Correção para adjustmentsUI.js - função setupActionButtons
+
 export function setupActionButtons() {
-    const btnOtimizar = document.getElementById('btn-otimizar');
-    const btnLimparAjustes = document.getElementById('btn-limpar-ajustes');
-    
-    // Verificar se o botão Limpar Ajustes existe
-    if (btnLimparAjustes) {
-      btnLimparAjustes.addEventListener('click', function() {
-        // Confirmar antes de limpar
-        if (confirm('Tem certeza que deseja limpar todos os ajustes realizados?')) {
-          // Limpar objeto de ajustes para TODOS os segmentos
-          segments.forEach(segment => {
-            appState.ajustes[segment] = { 
-              credito: {}, 
-              captacoes: {}, 
-              comissoes: {} 
-            };
-          });
-          
-          // Recarregar os dados do segmento atual
-          const segmentoAtual = document.getElementById('segment').value;
-          loadCreditData(segmentoAtual);
-          loadFundingData(segmentoAtual);
-          loadCommissionData(segmentoAtual);
-          
-          // Forçar recálculo do cascada para o segmento e para o total
-          calcularCascadaSimulado(segmentoAtual);
-          calcularCascadaSimulado('total');
-          
-          // Atualizar a interface
-          const modoVisualizacao = document.getElementById('btn-view-total').classList.contains('active') ? 
-            'total' : segmentoAtual;
-          loadPLData(modoVisualizacao);
-          loadIndicadoresData(modoVisualizacao);
-          
-          // Atualizar a lista de ajustes realizados
-          atualizarAjustesRealizados();
-          
-          // Feedback ao usuário
-          alert('Todos os ajustes foram removidos de todos os segmentos!');
-        }
-      });
-    }
+  const btnOtimizar = document.getElementById('btn-otimizar');
+  const btnLimparAjustes = document.getElementById('btn-limpar-ajustes');
   
-    // Botão Otimizar Portfolio (placeholder para implementação futura)
-    if (btnOtimizar) {
-      btnOtimizar.addEventListener('click', function() {
-        alert('Funcionalidade em desenvolvimento');
-      });
-    }
+  // Verificar se o botão Limpar Ajustes existe
+  if (btnLimparAjustes) {
+    btnLimparAjustes.addEventListener('click', function() {
+      // Confirmar antes de limpar
+      if (confirm('Tem certeza que deseja limpar todos os ajustes realizados?')) {
+        // Limpar objeto de ajustes para TODOS os segmentos
+        segments.forEach(segment => {
+          appState.ajustes[segment] = { 
+            credito: {}, 
+            captacoes: {}, 
+            comissoes: {} 
+          };
+        });
+        
+        // Recarregar os dados do segmento atual
+        const segmentoAtual = document.getElementById('segment').value;
+        loadCreditData(segmentoAtual);
+        loadFundingData(segmentoAtual);
+        loadCommissionData(segmentoAtual);
+        
+        // Forçar recálculo do cascada para o segmento e para o total
+        try {
+          // Importar diretamente a função do módulo para garantir que está disponível
+          import('../models/calculationModels.js').then(module => {
+            const { calcularCascadaSimulado, consolidarValoresTotal } = module;
+            
+            // Calcular cascada para o segmento atual
+            calcularCascadaSimulado(segmentoAtual);
+            
+            // Recalcular para o total também
+            calcularCascadaSimulado('total');
+            
+            // Consolidar os valores totais
+            consolidarValoresTotal();
+            
+            // Atualizar a interface
+            const modoVisualizacao = document.getElementById('btn-view-total').classList.contains('active') ? 
+              'total' : segmentoAtual;
+            
+            // Importar as funções necessárias para atualizar a interface
+            import('./plUI.js').then(plModule => {
+              const { loadPLData, loadIndicadoresData } = plModule;
+              loadPLData(modoVisualizacao);
+              loadIndicadoresData(modoVisualizacao);
+              
+              // Atualizar a lista de ajustes realizados
+              atualizarAjustesRealizados();
+              
+              // Feedback ao usuário
+              alert('Todos os ajustes foram removidos com sucesso!');
+            });
+          });
+        } catch (error) {
+          console.error("Erro ao recalcular cascada após limpar ajustes:", error);
+          alert('Ajustes foram removidos, mas ocorreu um erro ao atualizar os cálculos.');
+        }
+      }
+    });
   }
+
+  // Botão Otimizar Portfolio (placeholder para implementação futura)
+  if (btnOtimizar) {
+    btnOtimizar.addEventListener('click', function() {
+      alert('Funcionalidade em desenvolvimento');
+    });
+  }
+}

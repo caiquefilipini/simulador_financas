@@ -1,39 +1,59 @@
-// formatters.js - Utilitários para formatação de dados
+// Versão melhorada da função formatNumber em utils/formatters.js
 
-// Formata números para exibição
 export function formatNumber(num) {
-    if (isNaN(num)) return "0";
-    return num.toLocaleString('pt-BR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
+  if (num === undefined || num === null) return "0";
+  
+  // Garantir que o número é tratado como número
+  num = parseFloat(num);
+  
+  // Arredondar para inteiro quando for um valor maior que 1
+  // Isso elimina as casas decimais em valores grandes
+  if (Math.abs(num) >= 1) {
+    num = Math.round(num);
   }
   
-  // Formata percentuais
-  export function formatPercent(num, decimals = 2) {
-    if (isNaN(num)) return "0%";
-    return num.toLocaleString('pt-BR', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }) + '%';
-  }
+  // Formatar com separadores de milhar segundo padrão brasileiro
+  return num.toLocaleString('pt-BR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+}
+
+// Versão alternativa com tratamento mais específico
+export function formatNumberPrecise(num, type = 'default') {
+  if (num === undefined || num === null) return "0";
   
-  // Formata valores monetários
-  export function formatCurrency(num) {
-    if (isNaN(num)) return "R$ 0,00";
-    return num.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
+  // Converter para número
+  num = parseFloat(num);
   
-  // Formata datas (DD/MM/YYYY)
-  export function formatDate(date) {
-    if (!date) return "";
-    if (typeof date === 'string') {
-      date = new Date(date);
-    }
-    return date.toLocaleDateString('pt-BR');
+  // Diferentes tipos de formatação baseados no contexto
+  switch (type) {
+    case 'currency':
+      // Para valores monetários (sempre arredondados)
+      return Math.round(num).toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+      
+    case 'percentage':
+      // Para percentuais (1 casa decimal)
+      return num.toLocaleString('pt-BR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      }) + '%';
+      
+    case 'small':
+      // Para valores pequenos (pode manter decimais)
+      return num.toLocaleString('pt-BR', {
+        minimumFractionDigits: Math.abs(num) < 1 ? 2 : 0,
+        maximumFractionDigits: Math.abs(num) < 1 ? 2 : 0
+      });
+      
+    default:
+      // Padrão para valores grandes (sempre arredondados)
+      return Math.round(num).toLocaleString('pt-BR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
   }
+}

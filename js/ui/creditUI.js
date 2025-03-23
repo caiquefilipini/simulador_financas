@@ -2,7 +2,6 @@
 import { creditTypes } from '../config.js';
 import { appState } from '../models/dataModels.js';
 import { 
-  calcularSpreadBaseadoEmMargem, 
   calcularMargemSimulada, 
   calcularRWASimulado,
   calcularProvisaoSimulada,
@@ -25,7 +24,7 @@ export function loadCreditData(segment) {
   
   creditBody.innerHTML = '';
   
-  // Verificar se os tipos de crédito para o segmento existem
+  // Verificar se há tipos de crédito para este segmento
   const tiposCredito = creditTypes[segment] || [];
   if (tiposCredito.length === 0) {
     creditBody.innerHTML = '<tr><td colspan="11" style="text-align: center">Não há dados de crédito para este segmento</td></tr>';
@@ -45,46 +44,75 @@ export function loadCreditData(segment) {
       rwa: 0
     };
     
-    // Verificar se é o tipo "Demais" ou similar para calcular o spread baseado na margem
-    let spreadReal = data.spread;
-    if (tipo === 'Demais') {
-      spreadReal = calcularSpreadBaseadoEmMargem(segment, tipo);
+    // Verificar se é o tipo "Demais"
+    const isDemais = tipo === 'Demais';
+    
+    // Para o tipo "Demais", vamos garantir que os valores simulados sejam iguais aos reais
+    // e que os campos sejam desabilitados
+    if (isDemais) {
+      // Valores simulados iguais aos reais
+      const carteiraSimulada = data.carteira;
+      const spreadSimulado = data.spread;
+      const provisaoSimulada = data.provisao;
+      
+      // Margem simulada e RWA simulado são iguais aos reais
+      const margemSimulada = data.margem;
+      const rwaSimulado = data.rwa;
+      
+      // Criar HTML com campos desabilitados (readonly)
+      row.innerHTML = `
+        <td>${tipo}</td>
+        <td>${formatNumber(data.carteira)}</td>
+        <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada" readonly disabled style="background-color: #f0f0f0;"></td>
+        <td>${spreadSimulado.toFixed(2)}%</td>
+        <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado.toFixed(2)}" data-tipo="${tipo}" data-campo="spreadSimulado" readonly disabled style="background-color: #f0f0f0;"><span class="percent-sign">%</span></div></td>
+        <td>${formatNumber(data.provisao)}</td>
+        <td><input type="number" class="provisao-simulada" value="${provisaoSimulada}" data-tipo="${tipo}" data-campo="provisaoSimulada" readonly disabled style="background-color: #f0f0f0;"></td>
+        <td>${formatNumber(data.margem)}</td>
+        <td><span class="margem-simulada-value">${formatNumber(margemSimulada)}</span></td>
+        <td>${formatNumber(data.rwa)}</td>
+        <td><span class="rwa-simulado-value">${formatNumber(rwaSimulado)}</span></td>
+      `;
+    } else {
+      // Para outros tipos, manter o comportamento normal
+      const spreadReal = data.spread;
+      
+      // Recuperar valores simulados (ou usar valores reais como padrão)
+      const carteiraSimulada = appState.ajustes[segment].credito[`${tipo}_carteiraSimulada`] || data.carteira;
+      const spreadSimulado = appState.ajustes[segment].credito[`${tipo}_spreadSimulado`] || spreadReal;
+      const provisaoSimulada = appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] || data.provisao;
+      
+      // Calcular margem simulada e RWA simulado baseado nas fórmulas
+      const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
+      const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
+      
+      row.innerHTML = `
+        <td>${tipo}</td>
+        <td>${formatNumber(data.carteira)}</td>
+        <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
+        <td>${spreadReal.toFixed(2)}%</td>
+        <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado.toFixed(2)}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
+        <td>${formatNumber(data.provisao)}</td>
+        <td><input type="number" class="provisao-simulada" value="${provisaoSimulada.toFixed(0)}" data-tipo="${tipo}" data-campo="provisaoSimulada"></td>
+        <td>${formatNumber(data.margem)}</td>
+        <td><span class="margem-simulada-value">${formatNumber(margemSimulada)}</span></td>
+        <td>${formatNumber(data.rwa)}</td>
+        <td><span class="rwa-simulado-value">${formatNumber(rwaSimulado)}</span></td>
+      `;
     }
-    
-    // Recuperar valores simulados (ou usar valores reais como padrão)
-    const carteiraSimulada = appState.ajustes[segment].credito[`${tipo}_carteiraSimulada`] || data.carteira;
-    const spreadSimulado = appState.ajustes[segment].credito[`${tipo}_spreadSimulado`] || spreadReal;
-    const provisaoSimulada = appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] || data.provisao;
-    
-    // Calcular margem simulada e RWA simulado baseado nas fórmulas
-    const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
-    const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
-    
-    row.innerHTML = `
-      <td>${tipo}</td>
-      <td>${formatNumber(data.carteira)}</td>
-      <td><input type="number" class="carteira-simulada" value="${carteiraSimulada}" data-tipo="${tipo}" data-campo="carteiraSimulada"></td>
-      <td>${spreadReal}%</td>
-      <td><div class="input-with-percent"><input type="number" step="0.01" class="spread-simulado" value="${spreadSimulado}" data-tipo="${tipo}" data-campo="spreadSimulado"><span class="percent-sign">%</span></div></td>
-      <td>${formatNumber(data.provisao)}</td>
-      <td><input type="number" class="provisao-simulada" value="${provisaoSimulada}" data-tipo="${tipo}" data-campo="provisaoSimulada"></td>
-      <td>${formatNumber(data.margem)}</td>
-      <td><span class="margem-simulada-value">${formatNumber(margemSimulada)}</span></td>
-      <td>${formatNumber(data.rwa)}</td>
-      <td><span class="rwa-simulado-value">${formatNumber(rwaSimulado)}</span></td>
-    `;
     
     creditBody.appendChild(row);
   });
   
-  // Adicionar event listeners
-  const inputs = creditBody.querySelectorAll('input');
+  // Adicionar event listeners apenas para linhas que não são "Demais"
+  const inputs = creditBody.querySelectorAll('input:not([disabled])');
   inputs.forEach(input => {
     input.addEventListener('input', function(event) {
       updateCreditSimulatedValues(event, segment);
     });
   });
 }
+
 
 // Atualiza os valores simulados quando o usuário altera um input
 // Substitua a função updateCreditSimulatedValues no arquivo creditUI.js
