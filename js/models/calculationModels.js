@@ -66,21 +66,14 @@ export function calcularCascadaSimulado(segment) {
     // CRÉDITO: somar valores de todos os tipos
     const tiposCredito = Object.keys(appState.dadosPlanilha.credito[segmento] || {});
     tiposCredito.forEach(tipo => {
+
       const data = appState.dadosPlanilha.credito[segmento][tipo] || {};
       const ajustes = appState.ajustes?.[segmento]?.credito || {};
       
-      // Valores reais
-      // const carteiraReal = data.carteira || 0;
-      // const spreadReal = data.spread || 0;
       const provisaoReal = data.provisao || 0;
       const margemReal = data.margem || 0;
       const rwaReal = data.rwa || 0;
-      
-      // Valores simulados
-      // const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
-      // const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
+
       const provisaoSimulada = ajustes[`${tipo}_provisaoSimulada`] !== undefined ? 
         parseFloat(ajustes[`${tipo}_provisaoSimulada`]) : provisaoReal;
 
@@ -89,10 +82,6 @@ export function calcularCascadaSimulado(segment) {
 
       const rwaSimulado = ajustes[`${tipo}_rwaSimulado`] !== undefined ?
         parseFloat(ajustes[`${tipo}_rwaSimulado`]) : rwaReal;
-      
-      // Calcular margem e RWA simulados
-      // const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
-      // const rwaSimulado = calcularRWASimulado(rwaReal, carteiraReal, carteiraSimulada);
       
       // Acumular somas
       somaPDDReais += provisaoReal;
@@ -108,23 +97,9 @@ export function calcularCascadaSimulado(segment) {
     tiposCaptacao.forEach(tipo => {
       const data = appState.dadosPlanilha.captacoes[segmento][tipo] || {};
       const ajustes = appState.ajustes?.[segmento]?.captacoes || {};
-      
-      // Valores reais
-      // const carteiraReal = data.carteira || 0;
-      // const spreadReal = data.spread || 0;
       const margemReal = data.margem || 0;
-      
-      // Valores simulados
-      // const carteiraSimulada = ajustes[`${tipo}_carteiraSimulada`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_carteiraSimulada`]) : carteiraReal;
-      // const spreadSimulado = ajustes[`${tipo}_spreadSimulado`] !== undefined ? 
-      //   parseFloat(ajustes[`${tipo}_spreadSimulado`]) : spreadReal;
-
       const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
         parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
-      
-      // Calcular margem simulada
-      // const margemSimulada = calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado);
       
       // Acumular somas
       somaMargensCaptacoes += margemReal;
@@ -162,11 +137,13 @@ export function calcularCascadaSimulado(segment) {
   const pddReal = plData.PDD.real || 0;
   const pddSimulado = pddReal + diferencaPDD;
   
+  // const diferencaMargem = diferencaMargensCredito + diferencaMargensCaptacoes + diferencaComissoes;
   const diferencaMargem = diferencaMargensCredito + diferencaMargensCaptacoes + diferencaComissoes;
   const mobReal = plData.MOB.real || 0;
   const mobSimulado = mobReal + diferencaMargem;
+  console.log(`MOB real: ${mobReal}, MOB simulado: ${mobSimulado}, Diferença: ${diferencaMargem}`);
   
-  const molReal = plData.MOL.real || 0;
+  // const molReal = plData.MOL.real || 0;
   const molSimulado = mobSimulado + pddSimulado;
   
   const orypReal = plData.ORYP.real || 0; // ORYP simulado = real
@@ -334,11 +311,11 @@ export function consolidarValoresTotal() {
       const mobValue = cascadaOriginalTotal.MOB || 0;
       const totalGastos = cascadaOriginalTotal["Total Gastos"] || 0;
       
-      // appState.indicadoresTotal["Taxa Impositiva"].simulado = 
-      //   baiValue !== 0 ? (impostos / baiValue) * 100 : 0;
+      appState.indicadoresTotal["Taxa Impositiva"].simulado = 
+        baiValue !== 0 ? (impostos / baiValue) * 100 : 0;
       
-      // appState.indicadoresTotal["Eficiência"].simulado = 
-      //   mobValue !== 0 ? (totalGastos / mobValue) * 100 : 0;
+      appState.indicadoresTotal["Eficiência"].simulado = 
+        mobValue !== 0 ? (totalGastos / mobValue) * 100 : 0;
     }
   } else {
     console.log("Ajustes detectados, calculando valores consolidados para o Total");
@@ -369,11 +346,7 @@ export function consolidarValoresTotal() {
       baiTotal += appState.segmentPLData[segmento].BAI?.simulado || 0;
       impostosTotal += appState.segmentPLData[segmento].Impostos?.simulado || 0;
       bdiTotal += appState.segmentPLData[segmento].BDI?.simulado || 0;
-      
-      // Acumular RWA
-      if (appState.segmentIndicadores[segmento] && appState.segmentIndicadores[segmento].RWA) {
-        rwaTotal += appState.segmentIndicadores[segmento].RWA.simulado || 0;
-      }
+      rwaTotal += appState.segmentIndicadores[segmento]?.RWA?.simulado || 0;
     });
     
     // Atualizar valores consolidados com arredondamento
