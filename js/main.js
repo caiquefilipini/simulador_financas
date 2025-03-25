@@ -50,29 +50,31 @@ async function initialize() {
       // Carregar dados do JSON
       console.log("Tentando carregar dados do JSON...");
       const carregamentoOk = await carregarDadosJSON();
+
+      appState.initializeBaseValues();
       
-      // if (!carregamentoOk) {
-      //   console.warn("Carregamento de dados falhou, usando dados padrão");
-      //   // Se o carregamento falhou, garantir novamente as estruturas mínimas
-      //   appState.preencherDadosPadrao();
-      // }
+      if (!carregamentoOk) {
+        console.warn("Carregamento de dados falhou, usando dados padrão");
+        // Se o carregamento falhou, garantir novamente as estruturas mínimas
+        appState.preencherDadosPadrao();
+      }
       
       // Verificar novamente se os dados estão ok após o carregamento
-      // if (!appState.data) {
-      //   console.error("appState.data ainda está undefined após carregamento!");
-      //   appState.data = {}; // Fornecer um objeto vazio como fallback mínimo
-      // }
+      if (!appState.data) {
+        console.error("appState.data ainda está undefined após carregamento!");
+        appState.data = {}; // Fornecer um objeto vazio como fallback mínimo
+      }
       
-      // if (!appState.data.Especial) {
-      //   console.error("Segmento 'Especial' não encontrado nos dados carregados!");
-      //   // Criar uma estrutura mínima para o segmento Especial
-      //   appState.data.Especial = { 
-      //     cascada: {
-      //       MOB: 0, PDD: 0, MOL: 0, BAI: 0, BDI: 0, Impostos: 0, 
-      //       RWA: 0, RORWA: 0, "Total Gastos": 0, "Demais Ativos": 0, Oryp: 0
-      //     }
-      //   };
-      // }
+      if (!appState.data.Especial) {
+        console.error("Segmento 'Especial' não encontrado nos dados carregados!");
+        // Criar uma estrutura mínima para o segmento Especial
+        appState.data.Especial = { 
+          cascada: {
+            MOB: 0, PDD: 0, MOL: 0, BAI: 0, BDI: 0, Impostos: 0, 
+            RWA: 0, RORWA: 0, "Total Gastos": 0, "Demais Ativos": 0, Oryp: 0
+          }
+        };
+      }
       
       // Configurar o sistema de abas
       setupTabSystem();
@@ -159,9 +161,9 @@ function setupFileUpload() {
           loadCreditData(segmentoAtual);
           loadFundingData(segmentoAtual);
           loadCommissionData(segmentoAtual);
+          atualizarAjustesRealizados();
           loadPLData('total');
           loadIndicadoresData('total');
-          atualizarAjustesRealizados();
           
           statusElement.textContent = 'Arquivo processado com sucesso!';
           statusElement.className = 'upload-status success';

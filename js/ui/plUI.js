@@ -178,7 +178,7 @@ export function loadIndicadoresData(segment = 'total') {
   
   
 // Criação das linhas da tabela para cada indicador
-ordemIndicadores.forEach(key => {
+  ordemIndicadores.forEach(key => {
     if (dataToUse[key]) {
       const row = document.createElement('tr');
       const data = dataToUse[key]; // Definir a variável data aqui

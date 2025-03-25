@@ -22,6 +22,10 @@ export function atualizarAjustesRealizados() {
   let temAjusteCredito = false;
   let temAjusteCaptacoes = false;
   let temAjusteComissoes = false;
+
+  appState.temAjusteCredito = false;
+  appState.temAjusteCaptacoes = false;
+  appState.temAjusteComissoes = false;
   
   try {
     // Percorrer todos os segmentos
@@ -37,6 +41,7 @@ export function atualizarAjustesRealizados() {
           const carteiraReal = appState.dadosPlanilha.credito[segment][tipo]?.carteira || 0;
           if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
             temAjusteCredito = true;
+            appState.temAjusteCredito = temAjusteCredito;
             const diferenca = carteiraSimulada - carteiraReal;
             adicionarItemAjuste('credito', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
           }
@@ -46,6 +51,7 @@ export function atualizarAjustesRealizados() {
           const spreadReal = appState.dadosPlanilha.credito[segment][tipo]?.spread || 0;
           if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
             temAjusteCredito = true;
+            appState.temAjusteCredito = temAjusteCredito;
             const diferenca = spreadSimulado - spreadReal;
             adicionarItemAjuste('credito', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
           }
@@ -55,6 +61,7 @@ export function atualizarAjustesRealizados() {
           const provisaoReal = appState.dadosPlanilha.credito[segment][tipo]?.provisao || 0;
           if (provisaoSimulada !== 0 && provisaoSimulada.toFixed(0) !== provisaoReal.toFixed(0)) {
             temAjusteCredito = true;
+            appState.temAjusteCredito = temAjusteCredito;
             const diferenca = provisaoSimulada - provisaoReal;
             adicionarItemAjuste('credito', tipo, segment, 'Provisão', diferenca, false, `${formatNumber(provisaoReal)} → ${formatNumber(provisaoSimulada)}`);
           }
@@ -69,6 +76,7 @@ export function atualizarAjustesRealizados() {
           const carteiraReal = appState.dadosPlanilha.captacoes[segment][tipo]?.carteira || 0;
           if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
             temAjusteCaptacoes = true;
+            appState.temAjusteCaptacoes = temAjusteCaptacoes;
             const diferenca = carteiraSimulada - carteiraReal;
             adicionarItemAjuste('captacoes', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
           }
@@ -78,6 +86,7 @@ export function atualizarAjustesRealizados() {
           const spreadReal = appState.dadosPlanilha.captacoes[segment][tipo]?.spread || 0;
           if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
             temAjusteCaptacoes = true;
+            appState.temAjusteCaptacoes = temAjusteCaptacoes;
             const diferenca = spreadSimulado - spreadReal;
             adicionarItemAjuste('captacoes', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
           }
@@ -92,6 +101,7 @@ export function atualizarAjustesRealizados() {
           const valorReal = appState.dadosPlanilha.comissoes[segment][tipo]?.valor || 0;
           if (valorSimulado !== 0 && valorSimulado.toFixed(0) !== valorReal.toFixed(0)) {
             temAjusteComissoes = true;
+            appState.temAjusteComissoes = temAjusteComissoes;
             const diferenca = valorSimulado - valorReal;
             adicionarItemAjuste('comissoes', tipo, segment, 'Valor', diferenca, false, `${formatNumber(valorReal)} → ${formatNumber(valorSimulado)}`);
           }
