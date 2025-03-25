@@ -1,5 +1,5 @@
 // dataModels.js - Define as estruturas de dados principais da aplicação
-import { segments, creditTypes, fundingTypes, commissionTypes, DEFAULT_PL_STRUCTURE, DEFAULT_INDICADORES_STRUCTURE } from '../config.js';
+import { segments, DEFAULT_PL_STRUCTURE, DEFAULT_INDICADORES_STRUCTURE } from '../config.js';
 
 // Classe para gerenciar o estado global da aplicação
 class AppState {
@@ -21,17 +21,36 @@ class AppState {
     };
 
     // Valores base calculados a partir das tabelas
-    this.valoresBase = {
-      segmentos: {},
-      total: {
-        mobBase: 0,
-        pddBase: 0,
-        rwaBase: 0,
-      }
-    };
+    // this.valoresBase = {
+    //   segmentos: {},
+    //   total: {
+    //     mobBase: 0,
+    //     pddBase: 0,
+    //     rwaBase: 0,
+    //   }
+    // };
+
+    // NOVO: Valores reais para acesso rápido
+    // this.valoresReais = {
+    //   segmentos: {},
+    //   total: {
+    //     mobReal: 0,
+    //     pddReal: 0,
+    //     rwaReal: 0,
+    //     baiReal: 0,
+    //     impostosReal: 0,
+    //     bdiReal: 0,
+    //     orypReal: 0,
+    //     demaisAtivosReal: 0,
+    //     totalGastosReal: 0
+    //   }
+    // };
 
     // Armazenar os ajustes feitos por segmento
     this.ajustes = {};
+    
+    // NOVO: Flag para indicar se existem ajustes ativos
+    // this.temAjustesAtivos = false;
     
     this.initializeData();
   }
@@ -53,138 +72,138 @@ class AppState {
       this.dadosPlanilha.credito[segment] = {};
       this.dadosPlanilha.captacoes[segment] = {};
       this.dadosPlanilha.comissoes[segment] = {};
+      
+      // NOVO: Inicializa a estrutura de valores reais
+      // this.valoresReais.segmentos[segment] = {
+      //   mobReal: 0,
+      //   pddReal: 0,
+      //   rwaReal: 0,
+      //   baiReal: 0,
+      //   impostosReal: 0,
+      //   bdiReal: 0,
+      //   orypReal: 0,
+      //   demaisAtivosReal: 0,
+      //   totalGastosReal: 0
+      // };
     });
   }
 
   // Método para inicializar valores base
-  initializeBaseValues() {
-    console.log("Inicializando valores base...");
-    
-    // Inicializar estrutura para cada segmento
-    segments.forEach(segment => {
-      this.valoresBase.segmentos[segment] = {
-        mobBase: 0,
-        pddBase: 0,
-        rwaBase: 0,
-      };
-    });
+  // initializeInitialValues() {
+    // segments.forEach(segment => {
+    //   this.valoresBase.segmentos[segment] = {
+    //     mobBase: 0,
+    //     pddBase: 0,
+    //     rwaBase: 0,
+    //   };
+    // });
     
     // Chamar a função de cálculo para preencher os valores
-    this.calcularValoresBase();
-  }
+    // this.calcularValoresBase();
+    
+    // NOVO: Também calcular valores reais
+    // this.calcularValoresReais();
+  // }
 
   // Método para calcular valores base
-  calcularValoresBase() {
-    console.log("Calculando valores base de todos os segmentos...");
+  // calcularValoresBase() {
     
-    // Valores acumulados para o total
-    let totalMOBBase = 0;
-    let totalPDDBase = 0;
-    let totalRWABase = 0;
+  //   // Valores acumulados para o total
+  //   let totalMOBBase = 0;
+  //   let totalPDDBase = 0;
+  //   let totalRWABase = 0;
     
-    // Para cada segmento, calcular valores base
-    segments.forEach(segment => {
-      let segmentoMOBBase = 0;
-      let segmentoPDDBase = 0;
-      let segmentoRWABase = 0;
+  //   // Para cada segmento, calcular valores base
+  //   segments.forEach(segment => {
+  //     let segmentoMOBBase = 0;
+  //     let segmentoPDDBase = 0;
+  //     let segmentoRWABase = 0;
       
-      // 1. Calcular base para CRÉDITO
-      const tiposCredito = Object.keys(this.dadosPlanilha.credito[segment] || {});
-      tiposCredito.forEach(tipo => {
-        const data = this.dadosPlanilha.credito[segment][tipo] || {};
+  //     // 1. Calcular base para CRÉDITO
+  //     const tiposCredito = Object.keys(this.dadosPlanilha.credito[segment] || {});
+  //     tiposCredito.forEach(tipo => {
+  //       const data = this.dadosPlanilha.credito[segment][tipo] || {};
         
-        // Armazenar margens base para cada tipo
-        // this.valoresBase.segmentos[segment].margensCreditoBase[tipo] = data.margem || 0;
-        
-        // Somar à base do segmento
-        segmentoMOBBase += data.margem || 0;
-        segmentoPDDBase += data.provisao || 0;
-        segmentoRWABase += data.rwa || 0;
-      });
+  //       // Somar à base do segmento
+  //       segmentoMOBBase += data.margem || 0;
+  //       segmentoPDDBase += data.provisao || 0;
+  //       segmentoRWABase += data.rwa || 0;
+  //     });
       
-      // 2. Calcular base para CAPTAÇÕES
-      const tiposCaptacao = Object.keys(this.dadosPlanilha.captacoes[segment] || {});
-      tiposCaptacao.forEach(tipo => {
-        const data = this.dadosPlanilha.captacoes[segment][tipo] || {};
+  //     // 2. Calcular base para CAPTAÇÕES
+  //     const tiposCaptacao = Object.keys(this.dadosPlanilha.captacoes[segment] || {});
+  //     tiposCaptacao.forEach(tipo => {
+  //       const data = this.dadosPlanilha.captacoes[segment][tipo] || {};
         
-        // Armazenar margens base para cada tipo
-        // this.valoresBase.segmentos[segment].margensCaptacoesBase[tipo] = data.margem || 0;
-        
-        // Somar ao MOB base do segmento
-        segmentoMOBBase += data.margem || 0;
-      });
+  //       // Somar ao MOB base do segmento
+  //       segmentoMOBBase += data.margem || 0;
+  //     });
       
-      // 3. Calcular base para COMISSÕES
-      const tiposComissao = Object.keys(this.dadosPlanilha.comissoes[segment] || {});
-      tiposComissao.forEach(tipo => {
-        const data = this.dadosPlanilha.comissoes[segment][tipo] || {};
+  //     // 3. Calcular base para COMISSÕES
+  //     const tiposComissao = Object.keys(this.dadosPlanilha.comissoes[segment] || {});
+  //     tiposComissao.forEach(tipo => {
+  //       const data = this.dadosPlanilha.comissoes[segment][tipo] || {};
         
-        // Armazenar valores base para cada tipo
-        // this.valoresBase.segmentos[segment].comissoesBase[tipo] = data.valor || 0;
-        
-        // Somar ao MOB base do segmento
-        segmentoMOBBase += data.valor || 0;
-      });
+  //       // Somar ao MOB base do segmento
+  //       segmentoMOBBase += data.valor || 0;
+  //     });
       
-      // Armazenar os valores base do segmento
-      this.valoresBase.segmentos[segment].mobBase = segmentoMOBBase;
-      this.valoresBase.segmentos[segment].pddBase = segmentoPDDBase;
-      this.valoresBase.segmentos[segment].rwaBase = segmentoRWABase;
+  //     // Armazenar os valores base do segmento
+  //     this.valoresBase.segmentos[segment].mobBase = segmentoMOBBase;
+  //     this.valoresBase.segmentos[segment].pddBase = segmentoPDDBase;
+  //     this.valoresBase.segmentos[segment].rwaBase = segmentoRWABase;
       
-      // Acumular para o total
-      totalMOBBase += segmentoMOBBase;
-      totalPDDBase += segmentoPDDBase;
-      totalRWABase += segmentoRWABase;
-    });
+  //     // Acumular para o total
+  //     totalMOBBase += segmentoMOBBase;
+  //     totalPDDBase += segmentoPDDBase;
+  //     totalRWABase += segmentoRWABase;
+  //   });
     
-    // Armazenar os valores base do total
-    this.valoresBase.total.mobBase = totalMOBBase;
-    this.valoresBase.total.pddBase = totalPDDBase;
-    this.valoresBase.total.rwaBase = totalRWABase;
+  //   // Armazenar os valores base do total
+  //   this.valoresBase.total.mobBase = totalMOBBase;
+  //   this.valoresBase.total.pddBase = totalPDDBase;
+  //   this.valoresBase.total.rwaBase = totalRWABase;
     
-    console.log("Valores base calculados:", this.valoresBase);
-  }
+  //   console.log("Valores base calculados:", this.valoresBase);
+  // }
 
-  // Preenche com dados padrão
-  preencherDadosPadrao() {
-    console.log("Preenchendo com dados padrão...");
+  // NOVO: Método para calcular valores reais
+  // calcularValoresReais() {
+  //   console.log("Calculando valores reais de todos os segmentos e total...");
     
-    // Preencher dados de crédito, captação e comissão para todos os segmentos
-    segments.forEach(segment => {
-      // Crédito
-      creditTypes[segment].forEach(tipo => {
-        if (!this.dadosPlanilha.credito[segment]) this.dadosPlanilha.credito[segment] = {};
-        this.dadosPlanilha.credito[segment][tipo] = {
-          carteira: 0,
-          spread: (0).toFixed(2),
-          provisao: 0
-        };
-      });
+  //   // Para cada segmento, obter valores reais dos objetos PL e Indicadores
+  //   segments.forEach(segment => {
+  //     if (!this.segmentPLData[segment]) return;
       
-      // Captações
-      fundingTypes[segment].forEach(tipo => {
-        if (!this.dadosPlanilha.captacoes[segment]) this.dadosPlanilha.captacoes[segment] = {};
-        this.dadosPlanilha.captacoes[segment][tipo] = {
-          carteira: 0,
-          spread: (0).toFixed(2)
-        };
-      });
-      
-      // Comissões
-      commissionTypes[segment].forEach(tipo => {
-        if (!this.dadosPlanilha.comissoes[segment]) this.dadosPlanilha.comissoes[segment] = {};
-        this.dadosPlanilha.comissoes[segment][tipo] = {
-          valor: 0
-        };
-      });
-    });
+  //     // Armazenar os valores reais do segmento diretamente do PL e Indicadores
+  //     this.valoresReais.segmentos[segment] = {
+  //       mobReal: this.segmentPLData[segment].MOB?.real || 0,
+  //       pddReal: this.segmentPLData[segment].PDD?.real || 0,
+  //       rwaReal: this.segmentIndicadores[segment]?.RWA?.real || 0,
+  //       baiReal: this.segmentPLData[segment].BAI?.real || 0,
+  //       impostosReal: this.segmentPLData[segment].Impostos?.real || 0,
+  //       bdiReal: this.segmentPLData[segment].BDI?.real || 0,
+  //       orypReal: this.segmentPLData[segment].ORYP?.real || 0,
+  //       demaisAtivosReal: this.segmentPLData[segment]["Demais Ativos"]?.real || 0,
+  //       totalGastosReal: this.segmentPLData[segment]["Total Gastos"]?.real || 0
+  //     };
+  //   });
     
-    // Atualiza o P&L Total e indicadores
-    this.plDataTotal = { ...DEFAULT_PL_STRUCTURE };
-    this.indicadoresTotal = { ...DEFAULT_INDICADORES_STRUCTURE };
+  //   // Armazenar os valores reais do total diretamente do plDataTotal e indicadoresTotal
+  //   this.valoresReais.total = {
+  //     mobReal: this.plDataTotal.MOB?.real || 0,
+  //     pddReal: this.plDataTotal.PDD?.real || 0,
+  //     rwaReal: this.indicadoresTotal.RWA?.real || 0,
+  //     baiReal: this.plDataTotal.BAI?.real || 0,
+  //     impostosReal: this.plDataTotal.Impostos?.real || 0,
+  //     bdiReal: this.plDataTotal.BDI?.real || 0,
+  //     orypReal: this.plDataTotal.ORYP?.real || 0,
+  //     demaisAtivosReal: this.plDataTotal["Demais Ativos"]?.real || 0,
+  //     totalGastosReal: this.plDataTotal["Total Gastos"]?.real || 0
+  //   };
     
-    console.log("Dados padrão preenchidos com sucesso.");
-  }
+  //   console.log("Valores reais calculados:", this.valoresReais);
+  // }
   
   // Recupera o segmento atual selecionado
   getCurrentSegment() {

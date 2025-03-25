@@ -5,7 +5,30 @@ import { formatNumber } from '../utils/formatters.js';
 import { loadCreditData } from './creditUI.js';
 import { loadFundingData } from './fundingUI.js';
 import { loadCommissionData } from './commissionUI.js';
-import { loadPLData, loadIndicadoresData } from './plUI.js';
+
+// Inicializar diferenças acumuladas
+export function initializeDiferencas() {
+  if (!appState.diferencas) {
+    appState.diferencas = {
+      total: {
+        diferencaMargem: 0,
+        diferencaPDD: 0,
+        diferencaRWA: 0
+      }
+    };
+    
+    segments.forEach(segment => {
+      appState.diferencas[segment] = {
+        diferencaMargem: 0,
+        diferencaPDD: 0,
+        diferencaRWA: 0
+      };
+    });
+  }
+}
+
+// Garantir que as diferenças estejam inicializadas quando o módulo for carregado
+initializeDiferencas(); // ???
 
 // Atualiza as listas de ajustes realizados
 export function atualizarAjustesRealizados() {
@@ -44,6 +67,7 @@ export function atualizarAjustesRealizados() {
             appState.temAjusteCredito = temAjusteCredito;
             const diferenca = carteiraSimulada - carteiraReal;
             adicionarItemAjuste('credito', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
+            // function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentual = false, valorCompleto = null)
           }
           
           // Verificar spread simulado
@@ -135,13 +159,12 @@ export function atualizarAjustesRealizados() {
   }
 }
 
-// Função auxiliar para adicionar um item de ajuste à lista correspondente
 function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentual = false, valorCompleto = null) {
   const lista = document.getElementById(`lista-ajustes-${categoria}`);
   if (!lista) return;
   
+  // Código UI existente
   const item = document.createElement('li');
-  
   // Determinar classe para estilização baseada no valor
   const classeValor = valor > 0 ? 'positivo' : (valor < 0 ? 'negativo' : '');
   
@@ -161,6 +184,40 @@ function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentu
   `;
   
   lista.appendChild(item);
+  
+  // NOVO: Atualizar diferenças acumuladas com base no tipo de ajuste
+  if (campo === 'Provisão') {
+    // Atualizar diferença PDD para o segmento
+    appState.diferencas[segmento].diferencaPDD += valor;
+  } else if (campo === 'RWA') {
+    // Atualizar diferença RWA para o segmento
+    appState.diferencas[segmento].diferencaRWA += valor;
+  } else {
+    // Todos os outros ajustes (Carteira, Spread, Valor) afetam a margem
+    appState.diferencas[segmento].diferencaMargem += valor;
+  }
+  
+  // Recalcular total
+  atualizarDiferencasTotal();
+  
+  console.log(`Ajuste ${segmento}.${campo}: ${valor}, Diferenças acumuladas:`, appState.diferencas);
+}
+
+// NOVA função para recalcular diferenças totais
+function atualizarDiferencasTotal() {
+  // Zerar totais
+  appState.diferencas.total.diferencaMargem = 0;
+  appState.diferencas.total.diferencaPDD = 0;
+  appState.diferencas.total.diferencaRWA = 0;
+  
+  // Somar diferenças de todos os segmentos
+  segments.forEach(segment => {
+    if (appState.diferencas[segment]) {
+      appState.diferencas.total.diferencaMargem += appState.diferencas[segment].diferencaMargem || 0;
+      appState.diferencas.total.diferencaPDD += appState.diferencas[segment].diferencaPDD || 0;
+      appState.diferencas.total.diferencaRWA += appState.diferencas[segment].diferencaRWA || 0;
+    }
+  });
 }
 
 // Configura os botões de ação (Limpar Ajustes, Otimizar, etc.)
@@ -168,6 +225,7 @@ function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentu
 
 // Correção para adjustmentsUI.js - função setupActionButtons
 
+// Modificar a função setupActionButtons para zerar as diferenças
 export function setupActionButtons() {
   const btnOtimizar = document.getElementById('btn-otimizar');
   const btnLimparAjustes = document.getElementById('btn-limpar-ajustes');
@@ -184,15 +242,30 @@ export function setupActionButtons() {
             captacoes: {}, 
             comissoes: {} 
           };
+          
+          // NOVO: Zerar diferenças acumuladas
+          appState.diferencas[segment] = {
+            diferencaMargem: 0,
+            diferencaPDD: 0,
+            diferencaRWA: 0
+          };
         });
         
+        // NOVO: Zerar totais
+        appState.diferencas.total = {
+          diferencaMargem: 0,
+          diferencaPDD: 0,
+          diferencaRWA: 0
+        };
+        
+        // Código existente...
         // Recarregar os dados do segmento atual
         const segmentoAtual = document.getElementById('segment').value;
         loadCreditData(segmentoAtual);
         loadFundingData(segmentoAtual);
         loadCommissionData(segmentoAtual);
         
-        // Forçar recálculo do cascada para o segmento e para o total
+        // Resto do código permanece inalterado...
         try {
           // Importar diretamente a função do módulo para garantir que está disponível
           import('../models/calculationModels.js').then(module => {

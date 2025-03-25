@@ -6,14 +6,9 @@ import { formatNumber } from '../utils/formatters.js';
 // Versão corrigida da função loadPLData em plUI.js
 
 export function loadPLData(segment = 'total') {
-  console.log(`Carregando dados de P&L para: ${segment}`);
+  // console.log(`Carregando dados de P&L para: ${segment}`);
   
   const plBody = document.getElementById('pl-body');
-  if (!plBody) {
-    console.error("Elemento 'pl-body' não encontrado!");
-    return;
-  }
-  
   plBody.innerHTML = '';
   
   // Determinar quais dados usar
@@ -101,26 +96,9 @@ export function loadPLData(segment = 'total') {
       });
     }
     
-    // Calcular % PPTO
+    // Calcular % PPTO (Não tem necessidade de calcular aqui, pois já foi calculado na função calculatePPTOPercentage)
     const pptoRealPercentage = calculatePPTOPercentage(data.real, pptoValue);
     const pptoSimuladoPercentage = calculatePPTOPercentage(data.simulado, pptoValue);
-
-// Dentro da função loadPLData onde os valores são exibidos
-// const realRounded = Math.round(parseFloat(data.real || 0));
-// const simuladoRounded = Math.round(parseFloat(data.simulado || 0));
-
-// row.innerHTML = `
-//   <td>${key}</td>
-//   <td>${formatNumber(realRounded)}</td>
-//   <td>${formatNumber(simuladoRounded)}</td>
-//   <td>${pptoRealPercentage === "-" ? "-" : pptoRealPercentage + "%"}</td>
-//   <td>${pptoSimuladoPercentage === "-" ? "-" : pptoSimuladoPercentage + "%"}</td>
-// `;
-
-
-    // Garantir que os valores numéricos são tratados como números
-    // const realValue = typeof data.real === 'number' ? data.real : parseFloat(data.real || 0);
-    // const simuladoValue = typeof data.simulado === 'number' ? data.simulado : parseFloat(data.simulado || 0);
     
     // Arredondar para inteiros
     const realRounded = Math.round(parseFloat(data.real || 0));

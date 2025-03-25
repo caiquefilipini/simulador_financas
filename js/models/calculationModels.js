@@ -37,110 +37,174 @@ export function calcularMargemSimuladaCaptacoes(carteiraSimulada, spreadSimulado
   return carteiraSimulada * (spreadSimulado / 100);
 }
 
+
+export function calculosCascada( mob, pdd, rwa, segmento) {
+
+  // Criando variáveis para armazenar os valores
+  let oryp = 0;
+  let demaisAtivos = 0;
+  let totalGastos = 0;
+  let impostosAtual = 0;
+
+  let plData = (segmento === 'total') ? appState.plDataTotal : appState.segmentPLData[segmento];
+  let pptoData = (segmento === 'total') ? appState.data.Total.cascada_ppto : appState.data[segmento].cascada_ppto;
+  let indicadoresData = (segmento === 'total') ? appState.indicadoresTotal : appState.segmentIndicadores[segmento];
+
+  if (segmento === 'total') {
+    oryp = plData.ORYP.real;
+    demaisAtivos = appState.plDataTotal["Demais Ativos"].real;
+    totalGastos = appState.plDataTotal["Total Gastos"].real;
+    impostosAtual = appState.plDataTotal.Impostos.real;
+  }
+  else {
+    oryp = appState.segmentPLData[segmento].ORYP.real;
+    demaisAtivos = appState.segmentPLData[segmento]["Demais Ativos"].real;
+    totalGastos = appState.segmentPLData[segmento]["Total Gastos"].real;
+    impostosAtual = appState.segmentPLData[segmento].Impostos.real;
+  }
+
+  // Cálculo de valores
+  const mol = mob + pdd;
+  const bai = mol + oryp + demaisAtivos + totalGastos;
+  const pisDif = -dif_mob * 0.0465;
+  const irDif = -(bai + pisDif) * 0.3;
+  const impostos = impostosAtual + irDif + pisDif;
+  const bdi = bai + impostos;
+  
+  // Cálculo de indicadores
+  const taxaImpositivaSimulada = bai !== 0 ? Math.abs((impostos / bai) * 100) : 0;
+  const eficienciaSimulada = mob !== 0 ? Math.abs((totalGastos / mob) * 100) : 0;
+  const rorwaSimulado = rwa !== 0 ? (bdi / rwa) * 100 : 0;
+  
+  // Calcular atingimentos (%)
+  plData.MOB.atingimentoSimulado = pptpptoDatao.PPTO_MOB !== 0 ? (mob / pptoData.PPTO_MOB) * 100 : 0;
+  plData.PDD.atingimentoSimulado = pptoData.PPTO_PDD !== 0 ? (pdd / pptoData.PPTO_PDD) * 100 : 0;
+  plData.MOL.atingimentoSimulado = pptoData.PPTO_MOL !== 0 ? (mol / pptoData.PPTO_MOL) * 100 : 0;
+  plData.BAI.atingimentoSimulado = pptoData.PPTO_BAI !== 0 ? (bai / pptoData.PPTO_BAI) * 100 : 0;
+  plData.Impostos.atingimentoSimulado = pptoData.PPTO_Impostos !== 0 ? (impostos / pptoData.PPTO_Impostos) * 100 : 0;
+  plData.BDI.atingimentoSimulado = pptoData.PPTO_BDI !== 0 ? (bdi / pptoData.PPTO_BDI) * 100 : 0;
+  
+  // Atualizar indicadores
+  indicadoresData.RWA.simulado = Math.round(rwa);
+  indicadoresData.RORWA.simulado = parseFloat(rorwaSimulado.toFixed(2));
+  indicadoresData["Taxa Impositiva"].simulado = parseFloat(taxaImpositivaSimulada.toFixed(1));
+  indicadoresData["Eficiência"].simulado = parseFloat(eficienciaSimulada.toFixed(1));
+}
+
+
+
 // Função para calcular a cascada simulada
 export function calcularCascadaSimulado(segment) {
-  console.log(`Calculando cascada simulado para segmento: ${segment}`);
+
+  // console.log(`Calculando cascada simulado para segmento: ${segment}`);
 
   // Obter referências aos dados
-  let plData = (segment === 'total') ? appState.plDataTotal : appState.segmentPLData[segment];
-  let indicadoresData = (segment === 'total') ? appState.indicadoresTotal : appState.segmentIndicadores[segment];
+  let ajustes = appState.ajustes?.[segment] || {};
+  
+  // Obter valores base e reais diretamente
+  // const valoresBase = (segment === 'total') ? 
+  //   appState.valoresBase.total : appState.valoresBase.segmentos[segment];
+  
+  // const valoresReais = (segment === 'total') ? 
+  //   appState.valoresReais.total : appState.valoresReais.segmentos[segment];
+
+  // console.log(`Calculando cascada simulado para segmento: ${segment}`);
+
+  // Obter referências aos dados
+  // let plData = (segment === 'total') ? appState.plDataTotal : appState.segmentPLData[segment];
+  // let indicadoresData = (segment === 'total') ? appState.indicadoresTotal : appState.segmentIndicadores[segment];
   
   // Inicializar somas
-  let somaPDDReais = 0;
-  let somaPDDSimuladas = 0;
-  let somaMargensCredito = 0;
-  let somaMargensSimuladasCredito = 0;
-  let somaMargensCaptacoes = 0;
-  let somaMargensSimuladasCaptacoes = 0;
-  let somaComissoes = 0;
-  let somaComissoesSimuladas = 0;
-  let somaRWAReais = 0;
-  let somaRWASimulados = 0;
-  
-  // Obter bases para cálculo de diferenças
-  let mobBase = 0;
-  let pddBase = 0;
-  let rwaBase = 0;
+  // let somaPDDSimuladas = 0;
+  // let somaMargensSimuladasCredito = 0;
+  // let somaMargensSimuladasCaptacoes = 0;
+  // let somaComissoesSimuladas = 0;
+  // let somaRWASimulados = 0;
   
   // Obter segmentos a considerar
-  const segmentosParaCalcular = segment === 'total' ? 
-    segments : [segment];
+  // const segmentosParaCalcular = segment === 'total' ? 
+  //   segments : [segment];
   
-  // Iterar sobre os segmentos relevantes
-  segmentosParaCalcular.forEach(segmento => {
-    // Atualizar valores base
-    mobBase += appState.valoresBase.segmentos[segmento].mobBase || 0;
-    pddBase += appState.valoresBase.segmentos[segmento].pddBase || 0;
-    rwaBase += appState.valoresBase.segmentos[segmento].rwaBase || 0;
+  // // Iterar sobre os segmentos relevantes
+  // segmentosParaCalcular.forEach(segmento => {
+  //   // Atualizar valores base
+  //   // mobBase += appState.valoresBase.segmentos[segmento].mobBase || 0;
+  //   // pddBase += appState.valoresBase.segmentos[segmento].pddBase || 0;
+  //   // rwaBase += appState.valoresBase.segmentos[segmento].rwaBase || 0;
       
-    // CRÉDITO: somar valores de todos os tipos
-    const tiposCredito = Object.keys(appState.dadosPlanilha.credito[segmento] || {});
-    tiposCredito.forEach(tipo => {
-      // Obter dados reais e ajustes
-      const data = appState.dadosPlanilha.credito[segmento][tipo] || {};
-      const ajustes = appState.ajustes?.[segmento]?.credito || {};
+  //   // CRÉDITO: somar valores de todos os tipos
+  //   const tiposCredito = Object.keys(appState.dadosPlanilha.credito[segmento] || {});
+  //   tiposCredito.forEach(tipo => {
+  //     // Obter dados reais e ajustes
+  //     const data = appState.dadosPlanilha.credito[segmento][tipo] || {};
+  //     const ajustes = appState.ajustes?.[segmento]?.credito || {};
       
-      // Valores reais
-      const margemReal = data.margem || 0;
-      const provisaoReal = data.provisao || 0;
-      const rwaReal = data.rwa || 0;
+  //     // Valores reais
+  //     const margemReal = data.margem || 0;
+  //     const provisaoReal = data.provisao || 0;
+  //     const rwaReal = data.rwa || 0;
 
-      // Valores simulados
-      const provisaoSimulada = ajustes[`${tipo}_provisaoSimulada`] !== undefined ? 
-        parseFloat(ajustes[`${tipo}_provisaoSimulada`]) : provisaoReal;
+  //     // Valores simulados
+  //     const provisaoSimulada = ajustes[`${tipo}_provisaoSimulada`] !== undefined ? 
+  //       parseFloat(ajustes[`${tipo}_provisaoSimulada`]) : provisaoReal;
 
-      const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
+  //     const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
+  //       parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
 
-      const rwaSimulado = ajustes[`${tipo}_rwaSimulado`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_rwaSimulado`]) : rwaReal;
+  //     const rwaSimulado = ajustes[`${tipo}_rwaSimulado`] !== undefined ?
+  //       parseFloat(ajustes[`${tipo}_rwaSimulado`]) : rwaReal;
       
-      // Acumular somas
-      somaPDDReais += provisaoReal;
-      somaPDDSimuladas += provisaoSimulada;
-      somaMargensCredito += margemReal;
-      somaMargensSimuladasCredito += margemSimulada;
-      somaRWAReais += rwaReal;
-      somaRWASimulados += rwaSimulado;
-    });
+  //     // Acumular somas
+  //     somaPDDSimuladas += provisaoSimulada;
+  //     somaMargensSimuladasCredito += margemSimulada;
+  //     somaRWASimulados += rwaSimulado;
+  //   });
     
-    // CAPTAÇÕES: somar valores de todos os tipos
-    const tiposCaptacao = Object.keys(appState.dadosPlanilha.captacoes[segmento] || {});
-    tiposCaptacao.forEach(tipo => {
-      const data = appState.dadosPlanilha.captacoes[segmento][tipo] || {};
-      const ajustes = appState.ajustes?.[segmento]?.captacoes || {};
-      const margemReal = data.margem || 0;
-      const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
-        parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
+  //   // CAPTAÇÕES: somar valores de todos os tipos
+  //   const tiposCaptacao = Object.keys(appState.dadosPlanilha.captacoes[segmento] || {});
+  //   tiposCaptacao.forEach(tipo => {
+  //     const data = appState.dadosPlanilha.captacoes[segmento][tipo] || {};
+  //     const ajustes = appState.ajustes?.[segmento]?.captacoes || {};
+  //     const margemReal = data.margem || 0;
+  //     const margemSimulada = ajustes[`${tipo}_margemSimulada`] !== undefined ?
+  //       parseFloat(ajustes[`${tipo}_margemSimulada`]) : margemReal;
       
-      // Acumular somas
-      somaMargensCaptacoes += margemReal;
-      somaMargensSimuladasCaptacoes += margemSimulada;
-    });
+  //     // Acumular somas
+  //     somaMargensCaptacoes += margemReal;
+  //     somaMargensSimuladasCaptacoes += margemSimulada;
+  //   });
     
-    // COMISSÕES: somar valores de todos os tipos
-    const tiposComissao = Object.keys(appState.dadosPlanilha.comissoes[segmento] || {});
-    tiposComissao.forEach(tipo => {
-      const data = appState.dadosPlanilha.comissoes[segmento][tipo] || {};
-      const ajustes = appState.ajustes?.[segmento]?.comissoes || {};
+  //   // COMISSÕES: somar valores de todos os tipos
+  //   const tiposComissao = Object.keys(appState.dadosPlanilha.comissoes[segmento] || {});
+  //   tiposComissao.forEach(tipo => {
+  //     const data = appState.dadosPlanilha.comissoes[segmento][tipo] || {};
+  //     const ajustes = appState.ajustes?.[segmento]?.comissoes || {};
       
-      // Valores reais e simulados
-      const valorReal = data.valor || 0;
-      const valorSimulado = ajustes[`${tipo}_valorSimulado`] !== undefined ? 
-        parseFloat(ajustes[`${tipo}_valorSimulado`]) : valorReal;
+  //     // Valores reais e simulados
+  //     const valorReal = data.valor || 0;
+  //     const valorSimulado = ajustes[`${tipo}_valorSimulado`] !== undefined ? 
+  //       parseFloat(ajustes[`${tipo}_valorSimulado`]) : valorReal;
       
-      // Acumular somas
-      somaComissoes += valorReal;
-      somaComissoesSimuladas += valorSimulado;
-    });
-  });
+  //     // Acumular somas
+  //     somaComissoes += valorReal;
+  //     somaComissoesSimuladas += valorSimulado;
+  //   });
+  // });
+
+
+  // mobBase = appState.valoresBase.total.mobBase || 0;
+  // pddBase = appState.valoresBase.total.pddBase || 0;
+  // rwaBase = appState.valoresBase.total.rwaBase || 0;
 
   // Calcular diferenças
-  const diferencaRWA = somaRWASimulados - rwaBase;
-  const diferencaPDD = somaPDDSimuladas - pddBase;
-  const somaMargensSimuladas = somaMargensSimuladasCredito + somaMargensSimuladasCaptacoes + somaComissoesSimuladas;
-  const diferencaMOB = somaMargensSimuladas - mobBase;
+  // const diferencaRWA = somaRWASimulados - rwaBase;
+  // const diferencaPDD = somaPDDSimuladas - pddBase;
+  // const somaMargensSimuladas = somaMargensSimuladasCredito + somaMargensSimuladasCaptacoes + somaComissoesSimuladas;
+  // const diferencaMOB = somaMargensSimuladas - mobBase;
   
+  // Resgatando as diferenças calculadas nos ajustes
+  // ...
+
   // Calcular valores simulados
   const rwaReal = indicadoresData.RWA.real || 0;
   const rwaSimulado = rwaReal + diferencaRWA;
@@ -150,82 +214,17 @@ export function calcularCascadaSimulado(segment) {
   
   const mobReal = plData.MOB.real || 0;
   const mobSimulado = mobReal + diferencaMOB;
-  console.log(`MOB real: ${mobReal}, MOB simulado: ${mobSimulado}, Diferença: ${diferencaMOB}`);
-  console.log(appState.ajustes);
+  
+  // Como ORYP, Demais Ativos e Total Gastos não são ajustados, a diferença no MOL será igual à soma da diferença do MOB e PDD
+  const molReal = plData.MOL.real || 0;
+  const molSimulado = molReal + diferencaMOB + diferencaPDD;
+
+  // console.log(`MOB real: ${mobReal}, MOB simulado: ${mobSimulado}, Diferença: ${diferencaMOB}`);
+  // console.log(appState.ajustes);
   
   // Supondo que PDD é negativo, logo molSimulado = mobSimulado + pddSimulado (onde pddSimulado é negativo)
   // Verificar se essa lógica está correta no contexto do sistema
-  const molSimulado = mobSimulado + pddSimulado;
-  
-  const orypReal = plData.ORYP.real || 0; // ORYP simulado = real
-  const demaisAtivosReal = plData["Demais Ativos"].real || 0; // Demais Ativos simulado = real
-  const totalGastosReal = plData["Total Gastos"].real || 0; // Total Gastos simulado = real
-  
-  const baiSimulado = molSimulado + orypReal + demaisAtivosReal + totalGastosReal;
-  
-  // Cálculo de impostos simulados
-  const difMOBSimuladoReal = mobSimulado - mobReal;
-  const pisSimuladoDif = -difMOBSimuladoReal * 0.0465;
-  const irSimuladoDif = -(baiSimulado + pisSimuladoDif) * 0.3;
-  const impostosReal = plData.Impostos.real || 0; // Negativo
-  const impostosSimulado = impostosReal + irSimuladoDif + pisSimuladoDif;
-  
-  // BDI
-  const bdiSimulado = baiSimulado + impostosSimulado;
-  
-  // Cálculo de indicadores
-  const taxaImpositivaSimulada = baiSimulado !== 0 ? Math.abs((impostosSimulado / baiSimulado) * 100) : 0;
-  const eficienciaSimulada = mobSimulado !== 0 ? Math.abs((totalGastosReal / mobSimulado) * 100) : 0;
-  const rorwaSimulado = rwaSimulado !== 0 ? (bdiSimulado / rwaSimulado) * 100 : 0;
-  
-  // Cálculo de % PPTO
-  const mobPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_MOB || 
-                  appState.data?.Total?.cascada_ppto?.PPTO_MOB || 0;
-  const pddPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_PDD || 
-                  appState.data?.Total?.cascada_ppto?.PPTO_PDD || 0;
-  const molPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_MOL || 
-                  appState.data?.Total?.cascada_ppto?.PPTO_MOL || 0;
-  const baiPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_BAI || 
-                  appState.data?.Total?.cascada_ppto?.PPTO_BAI || 0;
-  const impostosPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_Impostos || 
-                       appState.data?.Total?.cascada_ppto?.PPTO_Impostos || 0;
-  const bdiPPTO = appState.data?.[segment]?.cascada_ppto?.PPTO_BDI || 
-                  appState.data?.Total?.cascada_ppto?.PPTO_BDI || 0;
-  
-  // Calcular atingimentos (%)
-  const mobAtingimento = mobPPTO !== 0 ? (mobSimulado / mobPPTO) * 100 : 0;
-  const pddAtingimento = pddPPTO !== 0 ? (pddSimulado / pddPPTO) * 100 : 0;
-  const molAtingimento = molPPTO !== 0 ? (molSimulado / molPPTO) * 100 : 0;
-  const baiAtingimento = baiPPTO !== 0 ? (baiSimulado / baiPPTO) * 100 : 0;
-  const impostosAtingimento = impostosPPTO !== 0 ? (impostosSimulado / impostosPPTO) * 100 : 0;
-  const bdiAtingimento = bdiPPTO !== 0 ? (bdiSimulado / bdiPPTO) * 100 : 0;
-  
-  // Atualizar os valores no objeto plData
-  plData.MOB.simulado = Math.round(mobSimulado);
-  plData.MOB.atingimentoSimulado = mobAtingimento;
-  plData.PDD.simulado = Math.round(pddSimulado);
-  plData.PDD.atingimentoSimulado = pddAtingimento;
-  plData.MOL.simulado = Math.round(molSimulado);
-  plData.MOL.atingimentoSimulado = molAtingimento;
-  plData.BAI.simulado = Math.round(baiSimulado);
-  plData.BAI.atingimentoSimulado = baiAtingimento;
-  plData.Impostos.simulado = Math.round(impostosSimulado);
-  plData.Impostos.atingimentoSimulado = impostosAtingimento;
-  plData.BDI.simulado = Math.round(bdiSimulado);
-  plData.BDI.atingimentoSimulado = bdiAtingimento;
-  
-  // Garantir que as propriedades não alteradas pela simulação mantenham os valores originais
-  if (segment === 'total') {
-    appState.plDataTotal.ORYP.atingimentoSimulado = appState.plDataTotal.ORYP.atingimentoReal;
-    appState.plDataTotal["Demais Ativos"].atingimentoSimulado = appState.plDataTotal["Demais Ativos"].atingimentoReal;
-    appState.plDataTotal["Total Gastos"].atingimentoSimulado = appState.plDataTotal["Total Gastos"].atingimentoReal;
-  }
-  
-  // Atualizar indicadores
-  indicadoresData.RWA.simulado = Math.round(rwaSimulado);
-  indicadoresData.RORWA.simulado = parseFloat(rorwaSimulado.toFixed(2));
-  indicadoresData["Taxa Impositiva"].simulado = parseFloat(taxaImpositivaSimulada.toFixed(1));
-  indicadoresData["Eficiência"].simulado = parseFloat(eficienciaSimulada.toFixed(1));
+
   
   // Atualizar a interface (chamar diretamente as funções de UI)
   try {
@@ -287,20 +286,20 @@ export function consolidarValoresTotal() {
 
   // Verificar se existem ajustes ativos
   const temAjustes = appState.temAjusteCredito || appState.temAjusteCaptacoes || appState.temAjusteComissoes;
-  console.log("Existem ajustes ativos:", temAjustes);
-  console.log("appState.ajustes:", appState.ajustes); 
+  // console.log("Existem ajustes ativos:", temAjustes);
+  // console.log("appState.ajustes:", appState.ajustes); 
   
   // Obter o cascada original do Total
   const cascadaOriginalTotal = appState.data?.Total?.cascada;
   
-  if (!cascadaOriginalTotal) {
-    console.error("Dados de cascada originais não encontrados para Total");
-    return;
-  }
+  // if (!cascadaOriginalTotal) {
+  //   console.error("Dados de cascada originais não encontrados para Total");
+  //   return;
+  // }
+
+  // Nem precisa dessa parte... se o cálculo funciona quando há ajustes, deve funcionar sem eles
   
   if (!temAjustes) {
-    console.log("Nenhum ajuste detectado, usando valores originais para o Total");
-    
     // Usar valores originais
     appState.plDataTotal.MOB.simulado = cascadaOriginalTotal.MOB;
     appState.plDataTotal.PDD.simulado = cascadaOriginalTotal.PDD;
@@ -330,7 +329,7 @@ export function consolidarValoresTotal() {
         mobValue !== 0 ? (totalGastos / mobValue) * 100 : 0;
     }
   } else {
-    console.log("Ajustes detectados, calculando valores consolidados para o Total");
+    // console.log("Ajustes detectados, calculando valores consolidados para o Total");
     
     // Inicializar acumuladores
     let mobTotal = 0;
@@ -434,7 +433,7 @@ export function consolidarValoresTotal() {
     appState.plDataTotal["Total Gastos"].atingimentoSimulado = appState.plDataTotal["Total Gastos"].atingimentoReal;
   }
   
-  console.log("Valores do Total atualizados com sucesso");
+  // console.log("Valores do Total atualizados com sucesso");
   
   // Atualizar a interface se estiver na visualização Total
   const btnViewTotal = document.getElementById('btn-view-total');

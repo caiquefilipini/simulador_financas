@@ -11,8 +11,27 @@ import {
 } from '../models/calculationModels.js';
 import { formatNumber } from '../utils/formatters.js';
 import { atualizarAjustesRealizados } from './adjustmentsUI.js';
-import { loadPLData, loadIndicadoresData } from './plUI.js';
+// import { loadPLData, loadIndicadoresData } from './plUI.js';
 
+export function initializeDiferencas() {
+  if (!appState.diferencas) {
+    appState.diferencasCredito = {
+      total: {
+        diferencaMargem: 0,
+        diferencaPDD: 0,
+        diferencaRWA: 0
+      }
+    };
+    
+    segments.forEach(segment => {
+      appState.diferencas[segment] = {
+        diferencasCredito: 0,
+        diferencaPDD: 0,
+        diferencaRWA: 0
+      };
+    });
+  }
+}
 
 // Carrega os dados de crédito para exibição na tabela
 export function loadCreditData(segment) {
@@ -123,7 +142,7 @@ export function updateCreditSimulatedValues(event, segment) {
     const campo = input.getAttribute('data-campo');
     const valor = parseFloat(input.value) || 0;
     
-    console.log(`Alteração em ${tipo}, campo ${campo}, novo valor: ${valor}`);
+    // console.log(`Alteração em ${tipo}, campo ${campo}, novo valor: ${valor}`);
     
     // Salvar o valor no objeto de ajustes
     appState.ajustes[segment].credito[`${tipo}_${campo}`] = valor;
@@ -144,8 +163,8 @@ export function updateCreditSimulatedValues(event, segment) {
     
     // Verificar se o valor é igual ao original (dentro de uma margem de erro)
     const valorOriginal = campo === 'carteiraSimulada' ? data.carteira :
-                        campo === 'spreadSimulado' ? data.spread :
-                        campo === 'provisaoSimulada' ? data.provisao : 0;
+                          campo === 'spreadSimulado' ? data.spread :
+                          campo === 'provisaoSimulada' ? data.provisao : 0;
     
     // Se o valor simulado é igual (ou muito próximo) ao valor original, remover o ajuste
     if (Math.abs(valor - valorOriginal) < 0.01) {
@@ -167,6 +186,7 @@ export function updateCreditSimulatedValues(event, segment) {
       
       // Atualizar o valor no objeto de ajustes
       appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] = provisaoSimulada;
+      appState.ajustes[segment].diferencas = provisaoSimulada - provisaoReal;
       
       // Atualizar o input de provisão simulada na interface
       const provisaoSimuladaInput = row.querySelector('.provisao-simulada');
@@ -182,6 +202,23 @@ export function updateCreditSimulatedValues(event, segment) {
     // Calcular novos valores
     const margemSimulada = calcularMargemSimulada(carteiraSimulada, spreadSimulado);
     const rwaSimulado = calcularRWASimulado(data.rwa, data.carteira, carteiraSimulada);
+
+    // Amazenar as diferenças nos totais
+    diferencaMargem = margemSimulada - data.margem;
+    diferencaPDD = provisaoSimulada - data.provisao;
+    diferencaRWA = rwaSimulado - data.rwa;
+
+    // Total
+    appState.diferencasCredito.total.diferencaMargem += diferencaMargem;
+    appState.diferencasCredito.total.diferencaPDD += diferencaPDD;
+    appState.diferencasCredito.total.diferencaRWA += diferencaRWA;
+
+    // Segmento
+    appState.diferencasCredito[segment].diferencaMargem += diferencaMargem;
+    appState.diferencasCredito[segment].diferencaPDD += diferencaPDD;
+    appState.diferencasCredito[segment].diferencaRWA += diferencaRWA;
+
+    console.log("Diferenças:", appState.diferencasCredito);
     
     // Atualizar os valores calculados na interface
     const margemSimuladaElement = row.querySelector('.margem-simulada-value');
@@ -194,40 +231,11 @@ export function updateCreditSimulatedValues(event, segment) {
     if (rwaSimuladoElement) {
       rwaSimuladoElement.textContent = formatNumber(rwaSimulado);
     }
-    
-    // Se o campo alterado for provisão, registrar o ajuste
-    if (campo === 'provisaoSimulada') {
-      console.log(`DIAGNÓSTICO DE PDD - Ajuste em ${tipo}:`, {
-        valorOriginal: data.provisao,
-        valorSimulado: valor,
-        diferenca: valor - data.provisao
-      });
-      
-      // Verificar se o ajuste está sendo registrado corretamente
-      console.log(`Ajuste registrado:`, appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`]);
-    }
   
-    // Atualizar a lista de ajustes realizados
     atualizarAjustesRealizados();
-    
-    // Atualizar o cascada para o segmento atual
     atualizarCascadaEInterface(segment);
-    
-    // ADICIONADO: Também atualizar o cascada total para refletir as mudanças
-    console.log("Consolidando valores para o Total após atualização no segmento", segment);
-    try {
-      // Chamar a função importada
-      consolidarValoresTotal();
-      
-      // Verificar se estamos na visualização Total
-      const btnViewTotal = document.getElementById('btn-view-total');
-      if (btnViewTotal && btnViewTotal.classList.contains('active')) {
-        console.log("Em visualização Total, atualizando interface...");
-        atualizarInterfaceCascadaTotal();
-      }
-    } catch (err) {
-      console.error("Erro ao consolidar valores para Total:", err);
-    }
+    consolidarValoresTotal();
+    atualizarInterfaceCascadaTotal();
   }
 
 // Função para chamar o cálculo do cascada e atualizar a interface
@@ -239,24 +247,5 @@ export function updateCreditSimulatedValues(event, segment) {
 // (creditUI.js, fundingUI.js, commissionUI.js)
 
 export function atualizarCascadaEInterface(segment) {
-    try {
-      console.log(`Iniciando atualização do cascada para segmento: ${segment}`);
-      
-      // Verificação básica
-      if (!segment || !appState || !appState.data) {
-        console.error("Dados básicos não disponíveis para atualização");
-        return;
-      }
-      
-      // Chamar diretamente calcularCascadaSimulado - a atualização da interface é feita lá dentro
-      try {
-        calcularCascadaSimulado(segment);
-        console.log("Cascada calculado e interface atualizada com sucesso");
-      } catch (error) {
-        console.error("Erro ao calcular cascada:", error);
-      }
-      
-    } catch (generalError) {
-      console.error("Erro geral em atualizarCascadaEInterface:", generalError);
-    }
-  }
+  calcularCascadaSimulado(segment)
+}
