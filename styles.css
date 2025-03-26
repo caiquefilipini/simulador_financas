@@ -172,6 +172,8 @@ select {
     font-weight: 500;
 }
 
+
+
 .form-group input,
 .form-group textarea {
     width: 100%;
@@ -257,6 +259,25 @@ select {
     font-style: italic;
     padding: 20px;
 }
+
+
+
+.row-demais {
+  background-color: #f8f8f8;
+  font-style: italic;
+}
+
+.row-demais td {
+  font-style: italic;
+}
+
+.input-demais {
+  font-style: italic;
+  background-color: #f8f8f8;
+}
+
+
+
 
 /* ===== SISTEMA DE ABAS ===== */
 .tabs {

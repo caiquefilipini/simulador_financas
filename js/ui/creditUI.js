@@ -6,7 +6,6 @@ import {
   calcularRWASimulado,
   calcularProvisaoSimulada,
   calcularCascadaSimulado,
-  consolidarValoresTotal,
   atualizarInterfaceCascadaTotal
 } from '../models/calculationModels.js';
 import { formatNumber } from '../utils/formatters.js';
@@ -142,8 +141,6 @@ export function updateCreditSimulatedValues(event, segment) {
     const campo = input.getAttribute('data-campo');
     const valor = parseFloat(input.value) || 0;
     
-    // console.log(`Alteração em ${tipo}, campo ${campo}, novo valor: ${valor}`);
-    
     // Salvar o valor no objeto de ajustes
     appState.ajustes[segment].credito[`${tipo}_${campo}`] = valor;
     
@@ -152,7 +149,6 @@ export function updateCreditSimulatedValues(event, segment) {
     if (!row) return;
     
     // Obter os dados reais
-    // Quando o valor digitado é igual ao original, remova o ajuste
     const data = appState.dadosPlanilha.credito[segment][tipo] || {
         carteira: 0,
         spread: 0,
@@ -166,12 +162,10 @@ export function updateCreditSimulatedValues(event, segment) {
                           campo === 'spreadSimulado' ? data.spread :
                           campo === 'provisaoSimulada' ? data.provisao : 0;
     
-    // Se o valor simulado é igual (ou muito próximo) ao valor original, remover o ajuste
+    // Se o valor simulado é igual (ou muito próximo) ao valor original, remover o ajuste. Caso contrário, salvar o ajuste
     if (Math.abs(valor - valorOriginal) < 0.01) {
-        console.log(`Valor igual ao original para ${tipo}, campo ${campo} - Removendo ajuste`);
         delete appState.ajustes[segment].credito[`${tipo}_${campo}`];
     } else {
-        // Caso contrário, salvar o ajuste
         appState.ajustes[segment].credito[`${tipo}_${campo}`] = valor;
     }
   
@@ -233,8 +227,7 @@ export function updateCreditSimulatedValues(event, segment) {
     }
   
     atualizarAjustesRealizados();
-    atualizarCascadaEInterface(segment);
-    consolidarValoresTotal();
+    calcularCascadaSimulado(segment);
     atualizarInterfaceCascadaTotal();
   }
 
@@ -246,6 +239,6 @@ export function updateCreditSimulatedValues(event, segment) {
 // Esta é uma versão simplificada da função atualizarCascadaEInterface para todos os arquivos UI
 // (creditUI.js, fundingUI.js, commissionUI.js)
 
-export function atualizarCascadaEInterface(segment) {
-  calcularCascadaSimulado(segment)
-}
+// export function atualizarCascadaEInterface(segment) {
+//   calcularCascadaSimulado(segment)
+// }

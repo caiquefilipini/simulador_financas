@@ -50,91 +50,87 @@ export function atualizarAjustesRealizados() {
   appState.temAjusteCaptacoes = false;
   appState.temAjusteComissoes = false;
   
-  try {
-    // Percorrer todos os segmentos
-    segments.forEach(segment => {
-      // Verificar se o objeto de ajustes para este segmento existe
-      if (!appState.ajustes[segment]) return;
-      
-      // Ajustes de Crédito
-      if (appState.ajustes[segment].credito && creditTypes[segment]) {
-        creditTypes[segment].forEach(tipo => {
-          // Verificar carteira simulada
-          const carteiraSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_carteiraSimulada`] || 0);
-          const carteiraReal = appState.dadosPlanilha.credito[segment][tipo]?.carteira || 0;
-          if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
-            temAjusteCredito = true;
-            appState.temAjusteCredito = temAjusteCredito;
-            const diferenca = carteiraSimulada - carteiraReal;
-            adicionarItemAjuste('credito', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
-            // function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentual = false, valorCompleto = null)
-          }
-          
-          // Verificar spread simulado
-          const spreadSimulado = parseFloat(appState.ajustes[segment].credito[`${tipo}_spreadSimulado`] || 0);
-          const spreadReal = appState.dadosPlanilha.credito[segment][tipo]?.spread || 0;
-          if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
-            temAjusteCredito = true;
-            appState.temAjusteCredito = temAjusteCredito;
-            const diferenca = spreadSimulado - spreadReal;
-            adicionarItemAjuste('credito', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
-          }
-          
-          // Verificar provisão simulada
-          const provisaoSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] || 0);
-          const provisaoReal = appState.dadosPlanilha.credito[segment][tipo]?.provisao || 0;
-          if (provisaoSimulada !== 0 && provisaoSimulada.toFixed(0) !== provisaoReal.toFixed(0)) {
-            temAjusteCredito = true;
-            appState.temAjusteCredito = temAjusteCredito;
-            const diferenca = provisaoSimulada - provisaoReal;
-            adicionarItemAjuste('credito', tipo, segment, 'Provisão', diferenca, false, `${formatNumber(provisaoReal)} → ${formatNumber(provisaoSimulada)}`);
-          }
-        });
-      }
-      
-      // Ajustes de Captações
-      if (appState.ajustes[segment].captacoes && fundingTypes[segment]) {
-        fundingTypes[segment].forEach(tipo => {
-          // Verificar carteira simulada
-          const carteiraSimulada = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || 0);
-          const carteiraReal = appState.dadosPlanilha.captacoes[segment][tipo]?.carteira || 0;
-          if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
-            temAjusteCaptacoes = true;
-            appState.temAjusteCaptacoes = temAjusteCaptacoes;
-            const diferenca = carteiraSimulada - carteiraReal;
-            adicionarItemAjuste('captacoes', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
-          }
-          
-          // Verificar spread simulado
-          const spreadSimulado = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || 0);
-          const spreadReal = appState.dadosPlanilha.captacoes[segment][tipo]?.spread || 0;
-          if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
-            temAjusteCaptacoes = true;
-            appState.temAjusteCaptacoes = temAjusteCaptacoes;
-            const diferenca = spreadSimulado - spreadReal;
-            adicionarItemAjuste('captacoes', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
-          }
-        });
-      }
-      
-      // Ajustes de Comissões
-      if (appState.ajustes[segment].comissoes && commissionTypes[segment]) {
-        commissionTypes[segment].forEach(tipo => {
-          // Verificar valor simulado
-          const valorSimulado = parseFloat(appState.ajustes[segment].comissoes[`${tipo}_valorSimulado`] || 0);
-          const valorReal = appState.dadosPlanilha.comissoes[segment][tipo]?.valor || 0;
-          if (valorSimulado !== 0 && valorSimulado.toFixed(0) !== valorReal.toFixed(0)) {
-            temAjusteComissoes = true;
-            appState.temAjusteComissoes = temAjusteComissoes;
-            const diferenca = valorSimulado - valorReal;
-            adicionarItemAjuste('comissoes', tipo, segment, 'Valor', diferenca, false, `${formatNumber(valorReal)} → ${formatNumber(valorSimulado)}`);
-          }
-        });
-      }
-    });
-  } catch (error) {
-    console.error("Erro ao atualizar ajustes realizados:", error);
-  }
+  // Percorrer todos os segmentos
+  segments.forEach(segment => {
+    // Verificar se o objeto de ajustes para este segmento existe
+    if (!appState.ajustes[segment]) return;
+    
+    // Ajustes de Crédito
+    if (appState.ajustes[segment].credito && creditTypes[segment]) {
+      creditTypes[segment].forEach(tipo => {
+        // Verificar carteira simulada
+        const carteiraSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_carteiraSimulada`] || 0);
+        const carteiraReal = appState.dadosPlanilha.credito[segment][tipo]?.carteira || 0;
+        if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
+          temAjusteCredito = true;
+          appState.temAjusteCredito = temAjusteCredito;
+          const diferenca = carteiraSimulada - carteiraReal;
+          adicionarItemAjuste('credito', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
+          // function adicionarItemAjuste(categoria, tipo, segmento, campo, valor, isPercentual = false, valorCompleto = null)
+        }
+        
+        // Verificar spread simulado
+        const spreadSimulado = parseFloat(appState.ajustes[segment].credito[`${tipo}_spreadSimulado`] || 0);
+        const spreadReal = appState.dadosPlanilha.credito[segment][tipo]?.spread || 0;
+        if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
+          temAjusteCredito = true;
+          appState.temAjusteCredito = temAjusteCredito;
+          const diferenca = spreadSimulado - spreadReal;
+          adicionarItemAjuste('credito', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
+        }
+        
+        // Verificar provisão simulada
+        const provisaoSimulada = parseFloat(appState.ajustes[segment].credito[`${tipo}_provisaoSimulada`] || 0);
+        const provisaoReal = appState.dadosPlanilha.credito[segment][tipo]?.provisao || 0;
+        if (provisaoSimulada !== 0 && provisaoSimulada.toFixed(0) !== provisaoReal.toFixed(0)) {
+          temAjusteCredito = true;
+          appState.temAjusteCredito = temAjusteCredito;
+          const diferenca = provisaoSimulada - provisaoReal;
+          adicionarItemAjuste('credito', tipo, segment, 'Provisão', diferenca, false, `${formatNumber(provisaoReal)} → ${formatNumber(provisaoSimulada)}`);
+        }
+      });
+    }
+    
+    // Ajustes de Captações
+    if (appState.ajustes[segment].captacoes && fundingTypes[segment]) {
+      fundingTypes[segment].forEach(tipo => {
+        // Verificar carteira simulada
+        const carteiraSimulada = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_carteiraSimulada`] || 0);
+        const carteiraReal = appState.dadosPlanilha.captacoes[segment][tipo]?.carteira || 0;
+        if (carteiraSimulada !== 0 && carteiraSimulada.toFixed(0) !== carteiraReal.toFixed(0)) {
+          temAjusteCaptacoes = true;
+          appState.temAjusteCaptacoes = temAjusteCaptacoes;
+          const diferenca = carteiraSimulada - carteiraReal;
+          adicionarItemAjuste('captacoes', tipo, segment, 'Carteira', diferenca, false, `${formatNumber(carteiraReal)} → ${formatNumber(carteiraSimulada)}`);
+        }
+        
+        // Verificar spread simulado
+        const spreadSimulado = parseFloat(appState.ajustes[segment].captacoes[`${tipo}_spreadSimulado`] || 0);
+        const spreadReal = appState.dadosPlanilha.captacoes[segment][tipo]?.spread || 0;
+        if (spreadSimulado !== 0 && spreadSimulado.toFixed(2) !== spreadReal.toFixed(2)) {
+          temAjusteCaptacoes = true;
+          appState.temAjusteCaptacoes = temAjusteCaptacoes;
+          const diferenca = spreadSimulado - spreadReal;
+          adicionarItemAjuste('captacoes', tipo, segment, 'Spread', diferenca, true, `${spreadReal.toFixed(2)}% → ${spreadSimulado.toFixed(2)}%`);
+        }
+      });
+    }
+    
+    // Ajustes de Comissões
+    if (appState.ajustes[segment].comissoes && commissionTypes[segment]) {
+      commissionTypes[segment].forEach(tipo => {
+        // Verificar valor simulado
+        const valorSimulado = parseFloat(appState.ajustes[segment].comissoes[`${tipo}_valorSimulado`] || 0);
+        const valorReal = appState.dadosPlanilha.comissoes[segment][tipo]?.valor || 0;
+        if (valorSimulado !== 0 && valorSimulado.toFixed(0) !== valorReal.toFixed(0)) {
+          temAjusteComissoes = true;
+          appState.temAjusteComissoes = temAjusteComissoes;
+          const diferenca = valorSimulado - valorReal;
+          adicionarItemAjuste('comissoes', tipo, segment, 'Valor', diferenca, false, `${formatNumber(valorReal)} → ${formatNumber(valorSimulado)}`);
+        }
+      });
+    }
+  });
   
   // Adicionar mensagens "nenhum ajuste" se necessário
   if (!temAjusteCredito) {
