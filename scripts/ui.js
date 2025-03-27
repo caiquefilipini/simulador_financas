@@ -494,7 +494,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         { campo: 'taxa_impositiva', nome: 'Taxa Impositiva (%)', formato: 'percentual' },
         { campo: 'eficiencia', nome: 'Eficiência (%)', formato: 'percentual' },
         { campo: 'rwa', nome: 'RWA', formato: 'inteiro' },
-        { campo: 'rorwa', nome: 'RORWA (%)', formato: 'percentual' }
+        { campo: 'rorwa', nome: 'RORWA (%)', formato: 'rorwa' } // Alterado para o novo formato
     ];
     
     // Adiciona as linhas da cascada

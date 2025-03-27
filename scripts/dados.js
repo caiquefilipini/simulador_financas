@@ -35,6 +35,10 @@ export function formatarValor(valor, tipo) {
             // Spread: decimal com 2 casas
             return valor.toFixed(2);
         
+        case 'rorwa':
+            // RORWA: decimal com 2 casas
+            return valor.toFixed(2);
+        
         case 'percentual':
             // Taxa impositiva, rorwa, eficiência e atingimentos: decimal com 1 casa
             return valor.toFixed(1);

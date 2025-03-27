@@ -702,7 +702,7 @@ export function obterDadosCascadaSimulados() {
     const rwaSimulado = dadosReais.rwa + somaDiferencas.rwa;
 
     const rorwaSimulado = rwaSimulado !== 0 
-        ? Math.round((bdiSimulado / rwaSimulado) * 1000) / 10 // Arredonda para 1 casa decimal
+        ? Math.round((bdiSimulado / rwaSimulado) * 10000) / 100 // Arredonda para 2 casas decimais
         : 0;
     
     // Cálculo dos atingimentos
