@@ -260,6 +260,16 @@ select {
     padding: 20px;
 }
 
+.representacao_numero {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 300;
+    font-style: italic;
+}
+
+.cascada {
+  text-align: center;
+}
 
 
 .row-demais {
@@ -275,6 +285,11 @@ select {
   font-style: italic;
   background-color: #f8f8f8;
 }
+
+/* ===== INPUTS ===== */
+
+
+
 
 
 
@@ -345,6 +360,23 @@ tr.highlight {
     font-weight: bold;
 }
 
+/* Estilo para linhas de resultado (MOL, BAI, BDI) */
+tr.linha-resultado {
+  background-color: #f3f3f3; /* Azul claro suave */
+  font-weight: bold;
+}
+
+/* Você também pode adicionar uma borda sutil para enfatizar */
+/* tr.linha-resultado td {
+  border-top: 1px solid #999;
+  border-bottom: 1px solid #999;
+} */
+
+/* Opcional: destacar o texto do nome do indicador */
+/* tr.linha-resultado td:first-child {
+  color: #0066cc; /* Azul mais escuro para o texto */
+/* } */
+
 /* Alinhamento à direita para tabelas nas abas, mas não para Cascada */
 #credito table td:not(:first-child),
 #captacoes table td:not(:first-child),
@@ -368,7 +400,8 @@ tr.highlight {
 
 /* Destacar valores simulados */
 /* Estilo consistente para todos os inputs na aplicação */
-input[type="number"] {
+/* input[type="number"] { */
+  input {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -896,4 +929,39 @@ transition: all 0.2s;
     .tab-content {
         padding: 15px 10px;
     }
+}
+
+/* Estilos para tornar a tabela de cascada responsiva */
+@media screen and (max-width: 768px) {
+  .pl-table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .pl-table th, 
+  .pl-table td {
+    font-size: 0.9rem;
+    padding: 6px 4px;
+    white-space: nowrap;
+  }
+  
+  /* Reduzir um pouco o padding nas representações numéricas */
+  .representacao_numero.cascada {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  
+  /* Melhorar alinhamento dos valores */
+  .pl-table td:not(:first-child) {
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  /* Adicionar um wrapper com scroll horizontal */
+  .pl-section {
+    overflow-x: auto;
+    max-width: 100%;
+  }
 }

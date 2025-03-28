@@ -158,16 +158,37 @@ function configurarCamposCredito() {
         // Ignora ajustes para o tipo "demais"
         if (tipoProduto.toLowerCase() === 'demais') {
             alert('Não é possível alterar valores do tipo "Demais".');
-            input.value = '';
+            // input.value = '';
+            input.value = '0';
             return;
         }
-        
-        const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
-        // Permitir valores vazios, tratando-os como zero
-        const valorSimulado = input.value === '' ? 0 : parseFloat(input.value);
-        
-        // Registra o ajuste
-        registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+
+        // Para o campo de carteira, tratamos como ajuste
+        if (input.name === 'carteira') {
+            const valorReal = parseFloat(input.getAttribute('data-carteira-real'));
+            // const ajuste = input.value === '' ? 0 : parseFloat(input.value);
+            const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
+
+            
+            // Calculamos o valor simulado somando o ajuste ao real
+            const valorSimulado = valorReal + ajuste;
+            
+            // Registramos normalmente (a lógica interna segue igual)
+            registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+        } else {
+            // Para outros campos (spread, provisão, etc.)
+            // CORREÇÃO: Obtém o valor real do campo correto
+            const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
+            
+            if (isNaN(valorReal)) {
+                console.error(`Valor real de ${input.name} não encontrado para`, tipoProduto);
+                return;
+            }
+            
+            const valorSimulado = input.value === '' ? valorReal : parseFloat(input.value);
+            
+            registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+        }
     });
 }
 
@@ -187,12 +208,29 @@ function configurarCamposCaptacoes() {
             return;
         }
         
-        const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
-        // Permitir valores vazios, tratando-os como zero
-        const valorSimulado = input.value === '' ? 0 : parseFloat(input.value);
-        
-        // Registra o ajuste
-        registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+        // Para o campo de carteira, tratamos como ajuste
+        if (input.name === 'carteira') {
+            const valorReal = parseFloat(input.getAttribute('data-carteira-real'));
+            const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
+            
+            // Calculamos o valor simulado somando o ajuste ao real
+            const valorSimulado = valorReal + ajuste;
+            
+            // Registramos o ajuste
+            registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+        } else {
+            // Para outros campos (spread, etc.)
+            const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
+            
+            if (isNaN(valorReal)) {
+                console.error(`Valor real de ${input.name} não encontrado para`, tipoProduto);
+                return;
+            }
+            
+            const valorSimulado = input.value === '' ? valorReal : parseFloat(input.value);
+            
+            registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+        }
     });
 }
 
@@ -211,16 +249,18 @@ function configurarCamposComissoes() {
             return;
         }
         
-        const valorReal = parseFloat(row.getAttribute('data-valor-real'));
-        // Permitir valores vazios, tratando-os como zero
-        const valorSimulado = input.value === '' ? 0 : parseFloat(input.value);
+        // Tratamos o valor como ajuste
+        const valorReal = parseFloat(input.getAttribute('data-valor-real'));
+        const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
         
-        // Registra o ajuste
+        // Calculamos o valor simulado somando o ajuste ao real
+        const valorSimulado = valorReal + ajuste;
+        
+        // Registramos o ajuste
         registrarAjusteComissao(tipoProduto, valorReal, valorSimulado);
     });
 }
 
-// Helper para formatar nomes de produtos para exibição
 // Helper para formatar nomes de produtos para exibição
 function formatarNomeProduto(nome) {
     // Casos especiais que precisam de formatação específica
@@ -311,13 +351,23 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             // Adiciona a célula de carteira simulada (input)
             const cellCarteiraSimulada = document.createElement('td');
             const inputCarteira = document.createElement('input');
-            inputCarteira.type = 'number';
+            inputCarteira.type = 'text'; // Use text em vez de number
             inputCarteira.name = 'carteira';
             inputCarteira.className = 'carteira-simulada';
-            inputCarteira.placeholder = formatarValor(item.carteira, 'inteiro');
+            inputCarteira.placeholder = "0"; // Mostra zero como placeholder
+            inputCarteira.value = ""; // Campo vazio para permitir digitar sinal negativo
             
-            // Preenche o valor do input com o valor real
-            inputCarteira.value = item.carteira;
+            // Adicione o valor real como atributo de dados
+            inputCarteira.setAttribute('data-carteira-real', item.carteira);
+            
+            // Adicionar validação para aceitar apenas números com sinal
+            inputCarteira.addEventListener('input', (e) => {
+                // Permitir apenas dígitos e sinal de menos
+                const regex = /^-?\d*$/;
+                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
+                    e.target.value = e.target.value.replace(/[^\d-]/g, '');
+                }
+            });
 
             // Desabilita o input para o tipo "demais"
             if (item.tipo.toLowerCase() === 'demais') {
@@ -335,7 +385,7 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             // Adiciona a célula de spread simulado (input)
             const cellSpreadSimulado = document.createElement('td');
             const inputSpread = document.createElement('input');
-            inputSpread.type = 'number';
+            inputSpread.type = 'text';
             inputSpread.name = 'spread';
             inputSpread.className = 'spread-simulado';
             inputSpread.placeholder = formatarValor(item.spread, 'spread');
@@ -373,9 +423,18 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
                 row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada, 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
+                // Para o campo de carteira, mostre apenas o ajuste, não o valor total
                 const inputCarteira = row.querySelector('input[name="carteira"]');
                 if (inputCarteira) {
-                    inputCarteira.value = item.carteiraSimulada;
+                    const valorReal = parseFloat(inputCarteira.getAttribute('data-carteira-real'));
+                    const ajuste = item.carteiraSimulada - valorReal;
+                    
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputCarteira.value = '';
+                    } else {
+                        inputCarteira.value = ajuste;
+                    }
                 }
                 
                 const inputSpread = row.querySelector('input[name="spread"]');
@@ -407,64 +466,79 @@ export function atualizarTabelaComissoes(dados, isSimulado) {
             row = document.createElement('tr');
             row.setAttribute('data-tipo', item.tipo);
             row.setAttribute('data-valor-real', item.valor);
-    
-            // Adicione este bloco para estilizar a linha "demais"
+
+            // Adiciona este bloco para estilizar a linha "demais"
             if (item.tipo.toLowerCase() === 'demais') {
                 row.style.backgroundColor = '#f8f8f8'; // Fundo cinza claro
                 row.style.fontStyle = 'italic'; // Texto em itálico
                 row.classList.add('row-demais');
-                // inputValor.classList.add('input-demais');
             }
-            
+
             // Adiciona o nome do tipo de comissão
             const cellTipo = document.createElement('td');
             cellTipo.textContent = formatarNomeProduto(item.tipo);
             row.appendChild(cellTipo);
-            
+
             // Adiciona a célula de valor real
             const cellValor = document.createElement('td');
             cellValor.textContent = formatarValor(item.valor, 'inteiro');
             row.appendChild(cellValor);
-            
+
             // Adiciona a célula de valor simulado (input)
             const cellValorSimulado = document.createElement('td');
             const inputValor = document.createElement('input');
-            inputValor.type = 'number';
+            inputValor.type = 'text'; // Use text em vez de number
             inputValor.name = 'valor';
             inputValor.className = 'valor-simulado-input';
-            inputValor.placeholder = formatarValor(item.valor, 'inteiro');
-            // if (item.tipo.toLowerCase() === 'demais') {
-            //     inputCarteira.classList.add('input-demais');
-            //     inputSpread.classList.add('input-demais');
-            // }
-            
-            // Preenche o valor do input com o valor real (ERRO 1)
-            inputValor.value = Math.round(item.valor);
+            inputValor.placeholder = "0"; // Mostra zero como placeholder
+            inputValor.value = ""; // Campo vazio para permitir digitar sinal negativo
+
+            // Adicione o valor real como atributo de dados
+            inputValor.setAttribute('data-valor-real', item.valor);
+
+            // Adicionar validação para aceitar apenas números com sinal
+            inputValor.addEventListener('input', (e) => {
+                // Permitir apenas dígitos e sinal de menos
+                const regex = /^-?\d*$/;
+                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
+                    e.target.value = e.target.value.replace(/[^\d-]/g, '');
+                }
+            });
 
             // Desabilita o input para o tipo "demais"
             if (item.tipo.toLowerCase() === 'demais') {
                 inputValor.disabled = true;
             }
-            
+
             cellValorSimulado.appendChild(inputValor);
             row.appendChild(cellValorSimulado);
-            
+
+            // Adiciona a linha à tabela
             tbody.appendChild(row);
         } else {
             // Para dados simulados, atualiza os valores nas células existentes
             row = [...tbody.querySelectorAll('tr')].find(r => r.getAttribute('data-tipo') === item.tipo);
             
             if (row) {
-                // Preenche o input com o valor simulado
+                // Para o campo de valor, mostre apenas o ajuste, não o valor total
                 const inputValor = row.querySelector('input[name="valor"]');
                 if (inputValor) {
-                    inputValor.value = Math.round(item.valorSimulado);
+                    const valorReal = parseFloat(inputValor.getAttribute('data-valor-real'));
+                    const ajuste = item.valorSimulado - valorReal;
+                    
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputValor.value = '';
+                    } else {
+                        inputValor.value = ajuste;
+                    }
                 }
             }
         }
     });
 }
 
+// Atualiza a tabela de cascada com os dados fornecidos
 // Atualiza a tabela de cascada com os dados fornecidos
 export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
     const tbody = document.getElementById('pl-body');
@@ -494,12 +568,29 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         { campo: 'taxa_impositiva', nome: 'Taxa Impositiva (%)', formato: 'percentual' },
         { campo: 'eficiencia', nome: 'Eficiência (%)', formato: 'percentual' },
         { campo: 'rwa', nome: 'RWA', formato: 'inteiro' },
-        { campo: 'rorwa', nome: 'RORWA (%)', formato: 'rorwa' } // Alterado para o novo formato
+        { campo: 'rorwa', nome: 'RORWA (%)', formato: 'rorwa' }
     ];
+    
+    // Adiciona cabeçalho com a nova coluna de diferença (Δ)
+    // const headerRow = document.createElement('tr');
+    // headerRow.innerHTML = `
+    //     <th>Indicador</th>
+    //     <th>Real</th>
+    //     <th>Simulado</th>
+    //     <th>Δ</th>
+    //     <th>% PPTO Real</th>
+    //     <th>% PPTO Simulado</th>
+    // `;
+    // tbody.appendChild(headerRow);
     
     // Adiciona as linhas da cascada
     estruturaCascada.forEach(item => {
         const row = document.createElement('tr');
+        
+        // Adiciona classe especial para linhas de resultado
+        if (item.campo === 'mol' || item.campo === 'bai' || item.campo === 'bdi') {
+            row.classList.add('linha-resultado');
+        }
         
         // Célula de nome do indicador
         const cellNome = document.createElement('td');
@@ -511,16 +602,18 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         cellReal.textContent = formatarValor(dadosReais.cascada[item.campo], 'inteiro');
         row.appendChild(cellReal);
         
-        // Célula do valor simulado - sempre mostra um valor (ERRO 5)
+        // Célula do valor simulado
         const cellSimulado = document.createElement('td');
-        // const cellSimulado = document.createElement('td');
+        const valorReal = dadosReais.cascada[item.campo];
+        let valorSimulado;
+        
         if (dadosSimulados) {
-            cellSimulado.textContent = formatarValor(dadosSimulados[item.campo], 'inteiro');
+            valorSimulado = dadosSimulados[item.campo];
+            cellSimulado.textContent = formatarValor(valorSimulado, 'inteiro');
             
             // Adiciona classe para destacar mudanças (vermelho para negativo, verde para positivo)
-            // Mas apenas se houver uma diferença significativa (use um pequeno epsilon para números decimais)
-            const diferenca = dadosSimulados[item.campo] - dadosReais.cascada[item.campo];
-            const epsilon = 0.5; // Tolerância para considerar valores iguais (devido a arredondamentos)
+            const diferenca = valorSimulado - valorReal;
+            const epsilon = 0.5; // Tolerância para considerar valores iguais
             
             if (Math.abs(diferenca) > epsilon) { // Apenas aplica cores se a diferença for significativa
                 if (diferenca > 0) {
@@ -530,10 +623,25 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
                 }
             }
         } else {
-            // Se não houver dados simulados, mostra o valor real (ERRO 5)
-            cellSimulado.textContent = formatarValor(dadosReais.cascada[item.campo], 'inteiro');
+            valorSimulado = valorReal;
+            cellSimulado.textContent = formatarValor(valorReal, 'inteiro');
         }
         row.appendChild(cellSimulado);
+        
+        // Nova célula para a diferença
+        const cellDiferenca = document.createElement('td');
+        const diferenca = valorSimulado - valorReal;
+        cellDiferenca.textContent = formatarValor(diferenca, 'inteiro');
+        
+        // Adiciona classe para destacar mudanças (vermelho para negativo, verde para positivo)
+        if (Math.abs(diferenca) > 0.5) { // Apenas aplica cores se a diferença for significativa
+            if (diferenca > 0) {
+                cellDiferenca.classList.add('positivo');
+            } else if (diferenca < 0) {
+                cellDiferenca.classList.add('negativo');
+            }
+        }
+        row.appendChild(cellDiferenca);
         
         // Célula de % PPTO Real
         const cellPptoReal = document.createElement('td');
@@ -541,18 +649,29 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         cellPptoReal.textContent = formatarValor(dadosReais.atingimento[campoAtingimento], 'percentual');
         row.appendChild(cellPptoReal);
         
-        // Célula de % PPTO Simulado - sempre mostra um valor (ERRO 5)
+        // Célula de % PPTO Simulado
         const cellPptoSimulado = document.createElement('td');
         if (dadosSimulados && dadosSimulados.atingimento) {
             cellPptoSimulado.textContent = formatarValor(dadosSimulados.atingimento[campoAtingimento], 'percentual');
         } else {
-            // Se não houver dados simulados, mostra o valor real (ERRO 5)
             cellPptoSimulado.textContent = formatarValor(dadosReais.atingimento[campoAtingimento], 'percentual');
         }
         row.appendChild(cellPptoSimulado);
         
         tbody.appendChild(row);
     });
+    
+    // Agora faça o mesmo para a tabela de indicadores
+    // const headerRowIndicadores = document.createElement('tr');
+    // headerRowIndicadores.innerHTML = `
+    //     <th>Indicador</th>
+    //     <th>Real</th>
+    //     <th>Simulado</th>
+    //     <th>Δ</th>
+    //     <th>% PPTO Real</th>
+    //     <th>% PPTO Simulado</th>
+    // `;
+    // tbodyIndicadores.appendChild(headerRowIndicadores);
     
     // Adiciona as linhas dos indicadores
     estruturaIndicadores.forEach(item => {
@@ -568,32 +687,55 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         cellReal.textContent = formatarValor(dadosReais.cascada[item.campo], item.formato);
         row.appendChild(cellReal);
         
-        // Célula do valor simulado - sempre mostra um valor (ERRO 5)
+        // Célula do valor simulado
         const cellSimulado = document.createElement('td');
+        const valorReal = dadosReais.cascada[item.campo];
+        let valorSimulado;
+        
         if (dadosSimulados) {
-            cellSimulado.textContent = formatarValor(dadosSimulados[item.campo], item.formato);
+            valorSimulado = dadosSimulados[item.campo];
+            cellSimulado.textContent = formatarValor(valorSimulado, item.formato);
             
-            // Adiciona classe para destacar mudanças (vermelho para negativo, verde para positivo)
-            const diferenca = dadosSimulados[item.campo] - dadosReais.cascada[item.campo];
-            if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca > 0) {
-                cellSimulado.classList.add('positivo');
-            } else if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
-                cellSimulado.classList.add('negativo');
-            } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca < 0) {
-                cellSimulado.classList.add('positivo');
-            } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca > 0) {
-                cellSimulado.classList.add('negativo');
+            // Adiciona classe para destacar mudanças
+            const diferenca = valorSimulado - valorReal;
+            const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.05 : 0.5;
+            
+            if (Math.abs(diferenca) > epsilon) {
+                if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
+                    cellSimulado.classList.add('positivo');
+                } else if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca > 0) {
+                    cellSimulado.classList.add('negativo');
+                } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca < 0) {
+                    cellSimulado.classList.add('positivo');
+                } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca > 0) {
+                    cellSimulado.classList.add('negativo');
+                }
             }
-
-            console.log("dados simulados", dadosSimulados);
-            console.log("dados reais", dadosReais.cascada);
-
-
         } else {
-            // Se não houver dados simulados, mostra o valor real (ERRO 5)
-            cellSimulado.textContent = formatarValor(dadosReais.cascada[item.campo], item.formato);
+            valorSimulado = valorReal;
+            cellSimulado.textContent = formatarValor(valorReal, item.formato);
         }
         row.appendChild(cellSimulado);
+        
+        // Nova célula para a diferença
+        const cellDiferenca = document.createElement('td');
+        const diferenca = valorSimulado - valorReal;
+        cellDiferenca.textContent = formatarValor(diferenca, item.formato);
+        
+        // Adiciona classe para destacar mudanças
+        const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.05 : 0.5;
+        if (Math.abs(diferenca) > epsilon) {
+            if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
+                cellDiferenca.classList.add('positivo');
+            } else if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca > 0) {
+                cellDiferenca.classList.add('negativo');
+            } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca < 0) {
+                cellDiferenca.classList.add('positivo');
+            } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca > 0) {
+                cellDiferenca.classList.add('negativo');
+            }
+        }
+        row.appendChild(cellDiferenca);
         
         // Células de atingimento (não aplicável para indicadores)
         const cellPptoReal = document.createElement('td');
@@ -801,10 +943,42 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             // Adiciona a célula de carteira simulada (input)
             const cellCarteiraSimulada = document.createElement('td');
             const inputCarteira = document.createElement('input');
-            inputCarteira.type = 'number';
+            inputCarteira.type = 'text';
             inputCarteira.name = 'carteira';
             inputCarteira.className = 'carteira-simulada';
-            inputCarteira.placeholder = formatarValor(item.carteira, 'inteiro');
+            // inputCarteira.placeholder = formatarValor(item.carteira, 'inteiro');
+            inputCarteira.placeholder = "0"; // Mostra que é um ajuste
+            inputCarteira.value = ""; // Começa com 0 (sem ajuste)
+            // inputCarteira.step = "any"; // Permite qualquer incremento, incluindo números negativos
+
+            // Adicionar validação para aceitar apenas números com sinal
+            inputCarteira.addEventListener('input', (e) => {
+                // Permitir apenas dígitos, sinal de menos e vírgula/ponto
+                const regex = /^-?\d*\.?\d*$/;
+                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
+                    e.target.value = e.target.value.replace(/[^\d.-]/g, '');
+                }
+            });
+
+            // Adicione isso:
+            inputCarteira.addEventListener('keydown', function(e) {
+                // Permite o sinal de menos, mesmo quando o campo está vazio
+                if (e.key === '-' && this.selectionStart === 0) {
+                    // Não faz nada, deixa o sinal de menos ser inserido
+                    return true;
+                }
+            });
+    
+            // // Armazena o valor real para referência
+            inputCarteira.setAttribute('data-carteira-real', item.carteira);
+
+            // Para manter o comportamento semelhante a um campo numérico
+            // inputCarteira.addEventListener('input', function() {
+            //     // Permite números e o sinal negativo no início
+            //     if (!/^-?\d*$/.test(this.value) && this.value !== '-') {
+            //         this.value = this.value.replace(/[^\d-]/g, '');
+            //     }
+            // });
             
             // Desabilita o input para o tipo "demais"
             if (item.tipo.toLowerCase() === 'demais') {
@@ -813,6 +987,14 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             
             cellCarteiraSimulada.appendChild(inputCarteira);
             row.appendChild(cellCarteiraSimulada);
+
+            // Verificar propriedades do input
+            console.log("Propriedades do input:", {
+                type: inputCarteira.type,
+                readOnly: inputCarteira.readOnly,
+                disabled: inputCarteira.disabled,
+                contentEditable: inputCarteira.contentEditable
+            });
             
             // Adiciona a célula de spread real
             const cellSpread = document.createElement('td');
@@ -890,9 +1072,24 @@ export function atualizarTabelaCredito(dados, isSimulado) {
                 row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado, 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
+                // const inputCarteira = row.querySelector('input[name="carteira"]');
+                // if (inputCarteira && !inputCarteira.value) {
+                //     inputCarteira.value = item.carteiraSimulada;
+                // }
+
+                // Para o campo de carteira, mostre apenas o ajuste, não o valor total
                 const inputCarteira = row.querySelector('input[name="carteira"]');
-                if (inputCarteira && !inputCarteira.value) {
-                    inputCarteira.value = item.carteiraSimulada;
+                if (inputCarteira) {
+                    const valorReal = parseFloat(inputCarteira.getAttribute('data-carteira-real'));
+                    const ajuste = item.carteiraSimulada - valorReal;
+                    // inputCarteira.value = ajuste;
+        
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputCarteira.value = '';
+                    } else {
+                        inputCarteira.value = ajuste;
+                    }
                 }
                 
                 const inputSpread = row.querySelector('input[name="spread"]');

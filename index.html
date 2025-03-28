@@ -22,8 +22,8 @@
             </div>
             
             <div class="acoes-simulador">
-                <button id="btn-otimizar" class="btn btn-action">Otimizar Portfolio</button>
-                <button id="btn-salvar" class="btn btn-primary">Salvar Simulação</button>
+                <button id="btn-otimizar" class="btn btn-action">🚧 Otimizar Portfolio</button>
+                <button id="btn-salvar" class="btn btn-primary">🚧 Salvar Simulação</button>
             </div>
         </div>
         
@@ -70,16 +70,16 @@
                     <thead>
                         <tr>
                             <th>Crédito</th>
-                            <th>Carteira Real</th>
-                            <th>Carteira Simulada</th>
-                            <th>Spread Real (%)</th>
-                            <th>Spread Simulado (%)</th>
-                            <th>Provisão Real</th>
-                            <th>Provisão Simulada</th>
-                            <th>Margem Real</th>
-                            <th>Margem Simulada</th>
-                            <th>RWA Real</th>
-                            <th>RWA Simulado</th>
+                            <th>Carteira Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Carteira<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Spread Real<p class="representacao_numero">(%)</p></th>
+                            <th>Ajuste Spread<p class="representacao_numero">(p.p)</p></th>
+                            <th>Provisão Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Provisão<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Margem Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Margem Simulada<p class="representacao_numero">(R$ M)</p></th>
+                            <th>RWA Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>RWA Simulado<p class="representacao_numero">(R$ M)</p></th>
                         </tr>
                     </thead>
                     <tbody id="credito-body">
@@ -94,12 +94,12 @@
                     <thead>
                         <tr>
                             <th>Captação</th>
-                            <th>Carteira Real</th>
-                            <th>Carteira Simulada</th>
+                            <th>Carteira Real (R$ M)</th>
+                            <th>Ajuste Carteira (R$ M)</th>
                             <th>Spread Real (%)</th>
-                            <th>Spread Simulado (%)</th>
-                            <th>Margem Real</th>
-                            <th>Margem Simulada</th>
+                            <th>Ajuste Spread (p.p.)</th>
+                            <th>Margem Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Margem Simulada<p class="representacao_numero">(R$ M)</p></th>
                         </tr>
                     </thead>
                     <tbody id="captacoes-body">
@@ -114,8 +114,8 @@
                     <thead>
                         <tr>
                             <th>Comissão</th>
-                            <th>Valor Real</th>
-                            <th>Valor Simulado</th>
+                            <th>Valor Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Valor<p class="representacao_numero">(R$ M)</p></th>
                         </tr>
                     </thead>
                     <tbody id="comissoes-body">
@@ -175,8 +175,9 @@
                     <thead>
                         <tr>
                             <th>Indicador</th>
-                            <th>Real</th>
-                            <th>Simulado</th>
+                            <th>Real <p class="representacao_numero cascada">(R$ M)</p></th>
+                            <th>Simulado <p class="representacao_numero cascada">(R$ M)</p></th>
+                            <th>Δ</th>
                             <th>% PPTO Real</th>
                             <th>% PPTO Simulado</th>
                         </tr>
@@ -187,14 +188,14 @@
                     
                     <!-- Separador -->
                     <tr class="table-separator">
-                        <td colspan="5"></td>
+                        <td colspan="6"></td>
                     </tr>
                     
                     <tbody id="indicadores-body" class="indicadores-section">
                     <!-- Preenchido via JavaScript -->
                     </tbody>
                     <tr class="table-separator">
-                        <td colspan="5"></td>
+                        <td colspan="6"></td>
                     </tr>
                 </table>
             </div>
