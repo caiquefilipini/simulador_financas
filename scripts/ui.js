@@ -7,7 +7,7 @@ import { obterSegmentos, formatarValor, obterTiposProduto } from './dados.js';
 import { 
     obterEstadoSimulador, atualizarSegmento, atualizarVisualizacaoCascada, 
     registrarAjusteCredito, registrarAjusteCaptacao, registrarAjusteComissao,
-    temAjustes, limparAjustes, obterListaAjustes, otimizarPortfolio
+    temAjustes, limparAjustes, obterListaAjustes, atualizarSomaDiferencas
 } from './simulador.js';
 
 // Inicializa a interface do usuário
@@ -86,10 +86,10 @@ function configurarAbas() {
 // Configura botões de ação
 function configurarBotoes() {
     // Botão de otimização
-    const btnOtimizar = document.getElementById('btn-otimizar');
-    if (btnOtimizar) {
-        btnOtimizar.addEventListener('click', otimizarPortfolio);
-    }
+    // const btnOtimizar = document.getElementById('btn-otimizar');
+    // if (btnOtimizar) {
+    //     btnOtimizar.addEventListener('click', otimizarPortfolio);
+    // }
     
     // Botão de salvar (não implementado neste MVP)
     const btnSalvar = document.getElementById('btn-salvar');
@@ -149,39 +149,97 @@ function configurarEventosInput() {
 // Configura campos de input da tabela de crédito
 function configurarCamposCredito() {
     document.getElementById('credito-body').addEventListener('input', (event) => {
+        // console.log("Evento de input capturado:", event.target, event.target.matches('input')); // Debugging
+
         if (!event.target.matches('input')) return;
         
         const input = event.target;
         const row = input.closest('tr');
         const tipoProduto = row.getAttribute('data-tipo');
-        
+        // console.log("Row:", row); // Debugging
+
         // Ignora ajustes para o tipo "demais"
-        if (tipoProduto.toLowerCase() === 'demais') {
-            alert('Não é possível alterar valores do tipo "Demais".');
-            // input.value = '';
-            input.value = '0';
-            return;
-        }
+        // if (tipoProduto.toLowerCase() === 'demais') {
+        //     alert('Não é possível alterar valores do tipo "Demais".');
+        //     input.value = '';
+        //     return;
+        // }
+
+        // console.log(input.name)
 
         // Para o campo de carteira, tratamos como ajuste
         if (input.name === 'carteira') {
             const valorReal = parseFloat(input.getAttribute('data-carteira-real'));
-            // const ajuste = input.value === '' ? 0 : parseFloat(input.value);
-            const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
-
-            
+            const ajuste = isNaN(input.value) || input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
+            console.log("ajuste", ajuste)
             // Calculamos o valor simulado somando o ajuste ao real
-            const valorSimulado = valorReal + ajuste;
             
-            // Registramos normalmente (a lógica interna segue igual)
-            registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
-        } else {
-            // Para outros campos (spread, provisão, etc.)
-            // CORREÇÃO: Obtém o valor real do campo correto
+            // let valorSimulado;
+            if (!isNaN(input.value) && input.value !== '') {
+                const valorSimulado = valorReal + ajuste;
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+            }
+
+            if (ajuste === 0 && input.value !== '-') {
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorReal);
+            }
+                // } else {
+            //     valorSimulado = valorReal; 
+            // }
+            // console.log("Valor real:", valorReal);
+            // console.log("Valor simulado:", valorSimulado);
+
+
+            // atualizarSomaDiferencas()
+            // Registramos normalmente
+            // if (ajuste === 0) {
+            
+            // }
+        } 
+        // Para o campo de spread, também tratamos como ajuste
+        else if (input.name === 'spread') {
+            const valorReal = parseFloat(row.getAttribute('data-spread-real'));
+            // console.log(typeof valorReal)
+            // Converte o valor digitado para número (substitui vírgula por ponto para o JS)
+            let ajusteStr = parseFloat(input.value.replace(',', '.'));
+            // const ajuste = ajusteStr === '' || ajusteStr === '-' ? 0 : parseFloat(ajusteStr);
+            const ajuste = ajusteStr === '' || isNaN(ajusteStr) ? 0 : parseFloat(ajusteStr);
+            console.log(ajuste)            
+            
+            // let valorSimulado;
+            if (!isNaN(input.value) && input.value !== '') {
+                const valorSimulado = valorReal + ajuste;
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+            }
+
+            if (ajuste === 0 && input.value !== '-') {
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorReal);
+            }
+        }
+
+        else if (input.name === 'provisao') {
+            const valorReal = parseFloat(row.getAttribute('data-provisao-real'));
+            // console.log(valorReal)
+            const ajuste = isNaN(input.value) || input.value === '' ? 0 : parseFloat(input.value);
+            console.log(ajuste)
+            
+            if (ajuste !== 0) {
+                const valorSimulado = valorReal + ajuste;
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorSimulado);
+            }
+
+            if (ajuste === 0 && input.value !== '-') {
+                registrarAjusteCredito(tipoProduto, input.name, valorReal, valorReal);
+            }
+
+        }
+
+        else {
+            // Para outros campos (provisão, etc.)
             const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
             
             if (isNaN(valorReal)) {
-                console.error(`Valor real de ${input.name} não encontrado para`, tipoProduto);
+                // console.error(`Valor real de ${input.name} não encontrado para`, tipoProduto);
                 return;
             }
             
@@ -207,19 +265,63 @@ function configurarCamposCaptacoes() {
             input.value = '';
             return;
         }
+
+        // console.log("input name", input.name)
         
         // Para o campo de carteira, tratamos como ajuste
         if (input.name === 'carteira') {
             const valorReal = parseFloat(input.getAttribute('data-carteira-real'));
-            const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
-            
+            const ajuste = isNaN(input.value) || input.value === '' ? 0 : parseFloat(input.value);
+            // console.log(ajuste)
             // Calculamos o valor simulado somando o ajuste ao real
-            const valorSimulado = valorReal + ajuste;
             
-            // Registramos o ajuste
-            registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
-        } else {
-            // Para outros campos (spread, etc.)
+            // if (ajuste !== 0) {
+            //     const valorSimulado = valorReal + ajuste;
+            //     registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+            // }
+
+            
+            
+            // let valorSimulado;
+            if (!isNaN(input.value) && input.value !== '') {
+                const valorSimulado = valorReal + ajuste;
+                registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+            }
+
+            if (ajuste === 0 && input.value !== '-') {
+                registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorReal);
+            }
+            // Registramos normalmente
+            // if (ajuste === 0) {
+            
+            // }
+        } 
+        // Para o campo de spread, também tratamos como ajuste
+        else if (input.name === 'spread') {
+            const valorReal = parseFloat(row.getAttribute('data-spread-real'));
+            let ajusteStr = parseFloat(input.value.replace(',', '.'));
+            const ajuste = ajusteStr === '' || isNaN(ajusteStr) ? 0 : parseFloat(ajusteStr);
+            console.log("ajuste", ajuste)
+
+            if (ajuste !== 0) {
+                const valorSimulado = valorReal + ajuste;
+                registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+            }
+
+            // let valorSimulado;
+            // if (!isNaN(input.value) && input.value !== '') {
+            //     const valorSimulado = valorReal + ajuste;
+            //     registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorSimulado);
+            // }
+
+            if (ajuste === 0 && input.value !== '-') {
+                registrarAjusteCaptacao(tipoProduto, input.name, valorReal, valorReal);
+            }
+
+            
+        } 
+        else {
+            // Para outros campos
             const valorReal = parseFloat(row.getAttribute(`data-${input.name}-real`));
             
             if (isNaN(valorReal)) {
@@ -243,21 +345,32 @@ function configurarCamposComissoes() {
         const tipoProduto = row.getAttribute('data-tipo');
         
         // Ignora ajustes para o tipo "demais"
-        if (tipoProduto.toLowerCase() === 'demais') {
-            alert('Não é possível alterar valores do tipo "Demais".');
-            input.value = '';
-            return;
-        }
+        // if (tipoProduto.toLowerCase() === 'demais') {
+        //     alert('Não é possível alterar valores do tipo "Demais".');
+        //     input.value = '';
+        //     return;
+        // }
         
         // Tratamos o valor como ajuste
         const valorReal = parseFloat(input.getAttribute('data-valor-real'));
-        const ajuste = input.value === '' || input.value === '-' ? 0 : parseFloat(input.value);
+        const ajuste = isNaN(input.value) || input.value === '' ? 0 : parseFloat(input.value);
         
-        // Calculamos o valor simulado somando o ajuste ao real
-        const valorSimulado = valorReal + ajuste;
-        
-        // Registramos o ajuste
-        registrarAjusteComissao(tipoProduto, valorReal, valorSimulado);
+        if (ajuste !== 0) {
+            const valorSimulado = valorReal + ajuste;
+            registrarAjusteComissao(tipoProduto, valorReal, valorSimulado);
+        }
+
+        // let valorSimulado;
+        // if (!isNaN(input.value) && input.value !== '') {
+        //     const valorSimulado = valorReal + ajuste;
+        //     registrarAjusteComissao(tipoProduto, input.name, valorReal, valorSimulado);
+        // }
+        // console.log("ajuste", ajuste)
+        console.log(ajuste === 0 && input.value !== '-')
+        if (ajuste === 0 && input.value !== '-') {
+            // console.log(tipoProduto, input.name, valorReal, valorReal)
+            registrarAjusteComissao(tipoProduto, valorReal, valorReal);
+        }
     });
 }
 
@@ -305,7 +418,240 @@ function formatarNomeProduto(nome) {
         .join(' ');
 }
 
-// Atualiza a tabela de crédito com os dados fornecidos
+export function atualizarTabelaCredito(dados, isSimulado) {
+    const tbody = document.getElementById('credito-body');
+    
+    if (!tbody) return;
+    
+    // Se for para exibir dados reais, limpa a tabela primeiro
+    if (!isSimulado) {
+        tbody.innerHTML = '';
+    }
+    
+    // Percorre os dados e insere ou atualiza as linhas na tabela
+    dados.forEach(item => {
+        let row;
+        
+        if (!isSimulado) {
+            // Cria uma nova linha para dados reais
+            row = document.createElement('tr');
+            row.setAttribute('data-tipo', item.tipo);
+            row.setAttribute('data-carteira-real', item.carteira);
+            row.setAttribute('data-spread-real', item.spread);
+            row.setAttribute('data-provisao-real', item.provisao);
+            row.setAttribute('data-margem-real', item.margem);
+            row.setAttribute('data-rwa-real', item.rwa);
+
+            if (item.tipo.toLowerCase() === 'demais') {
+                row.style.backgroundColor = '#f8f8f8'; // Fundo cinza claro
+                row.style.fontStyle = 'italic'; // Texto em itálico
+                row.classList.add('row-demais');
+                // inputCarteira.classList.add('input-demais');
+                // inputSpread.classList.add('input-demais');
+            }
+            
+            // Adiciona o nome do tipo de produto
+            const cellTipo = document.createElement('td');
+            cellTipo.textContent = formatarNomeProduto(item.tipo);
+            row.appendChild(cellTipo);
+            
+            // Adiciona a célula de carteira real
+            const cellCarteira = document.createElement('td');
+            cellCarteira.textContent = formatarValor(item.carteira, 'inteiro');
+            row.appendChild(cellCarteira);
+            
+            // Adiciona a célula de carteira simulada (input)
+            const cellCarteiraSimulada = document.createElement('td');
+            const inputCarteira = document.createElement('input');
+            inputCarteira.type = 'text';
+            inputCarteira.name = 'carteira';
+            inputCarteira.className = 'carteira-simulada';
+            inputCarteira.placeholder = "0"; // Mostra que é um ajuste
+            inputCarteira.value = ""; // Começa com 0 (sem ajuste)
+            // inputCarteira.step = "any"; // Permite qualquer incremento, incluindo números negativos
+    
+            // // Armazena o valor real para referência
+            inputCarteira.setAttribute('data-carteira-real', item.carteira);
+            let previousValueCarteira = '';
+            inputCarteira.addEventListener('input', (e) => {
+                const regex = /^-?\d*$/;
+                console.log((regex.test(e.target.value)))
+                if (!regex.test(e.target.value)) {
+                    e.target.value = previousValueCarteira;
+                } else {
+                    previousValueCarteira = e.target.value;
+                }
+
+            });
+            
+            // Desabilita o input para o tipo "demais"
+            if (item.tipo.toLowerCase() === 'demais') {
+                inputCarteira.disabled = true;
+            }
+            
+            cellCarteiraSimulada.appendChild(inputCarteira);
+            row.appendChild(cellCarteiraSimulada);
+            
+            // Adiciona a célula de spread real
+            const cellSpread = document.createElement('td');
+            cellSpread.textContent = formatarValor(item.spread, 'spread');
+            row.appendChild(cellSpread);
+            
+            // Adiciona a célula de spread simulado (input)
+            const cellSpreadSimulado = document.createElement('td');
+            const inputSpread = document.createElement('input');
+            inputSpread.type = 'text'; // Mudando para text em vez de number
+            inputSpread.name = 'spread';
+            inputSpread.className = 'spread-simulado';
+            inputSpread.placeholder = "0"; // Mostra zero como placeholder
+            inputSpread.value = ""; // Campo vazio inicialmente
+
+            // Adicione o valor real como atributo de dados
+            inputSpread.setAttribute('data-spread-real', item.spread);
+            let previousValue = '';
+            // Adicionar validação para aceitar apenas números com sinal
+            inputSpread.addEventListener('input', (e) => {
+                // Permitir apenas números, vírgula e sinal negativo
+                const regex = /^-?\d*([.,]\d*)?$/;
+                if (!regex.test(e.target.value)) {
+                    e.target.value = previousValue;
+                } else {
+                    // Se for válido, armazene o valor atual
+                    previousValue = e.target.value;
+                }
+            });
+
+            // Desabilita o input para o tipo "demais"
+            if (item.tipo.toLowerCase() === 'demais') {
+                inputSpread.disabled = true;
+            }
+            
+            cellSpreadSimulado.appendChild(inputSpread);
+            row.appendChild(cellSpreadSimulado);
+            
+            // Adiciona a célula de provisão real
+            const cellProvisao = document.createElement('td');
+            cellProvisao.textContent = formatarValor(item.provisao, 'inteiro');
+            row.appendChild(cellProvisao);
+            
+            // Adiciona a célula de provisão simulada (input)
+            const cellProvisaoSimulada = document.createElement('td');
+            const inputProvisao = document.createElement('input');
+            inputProvisao.type = 'text';
+            inputProvisao.name = 'provisao';
+            inputProvisao.className = 'provisao-simulada';
+            inputProvisao.placeholder = "0"; // Mostra zero como placeholder
+            inputProvisao.value = ""; // Campo vazio inicialmente
+
+            inputProvisao.setAttribute('data-provisao-real', item.provisao);
+            // inputSpread.setAttribute('data-spread-real', item.spread);
+            let previousValueProvisao = '';
+            // Adicionar validação para aceitar apenas números com sinal
+            inputProvisao.addEventListener('input', (e) => {
+                const regex = /^-?\d*$/;
+                console.log((regex.test(e.target.value)))
+                if (!regex.test(e.target.value)) {
+                    e.target.value = previousValueProvisao;
+                } else {
+                    previousValueProvisao = e.target.value;
+                }
+            });            
+            // Desabilita o input para o tipo "demais"
+            if (item.tipo.toLowerCase() === 'demais') {
+                inputProvisao.disabled = true;
+            }
+            
+            cellProvisaoSimulada.appendChild(inputProvisao);
+            row.appendChild(cellProvisaoSimulada);
+            
+
+
+
+
+
+
+            // Adiciona a célula de margem real
+            const cellMargem = document.createElement('td');
+            cellMargem.textContent = formatarValor(item.margem, 'inteiro');
+            row.appendChild(cellMargem);
+            
+            // Adiciona a célula de margem simulada (calculada)
+            const cellMargemSimulada = document.createElement('td');
+            cellMargemSimulada.className = 'margem-simulada';
+            cellMargemSimulada.textContent = formatarValor(item.margem, 'inteiro');
+            row.appendChild(cellMargemSimulada);
+            
+            // Adiciona a célula de RWA real
+            const cellRWA = document.createElement('td');
+            cellRWA.textContent = formatarValor(item.rwa, 'inteiro');
+            row.appendChild(cellRWA);
+            
+            // Adiciona a célula de RWA simulado (calculado)
+            const cellRWASimulado = document.createElement('td');
+            cellRWASimulado.className = 'rwa-simulado';
+            cellRWASimulado.textContent = formatarValor(item.rwa, 'inteiro');
+            row.appendChild(cellRWASimulado);
+            
+            tbody.appendChild(row);
+        } else {
+            // Para dados simulados, atualiza os valores nas células existentes
+            row = [...tbody.querySelectorAll('tr')].find(r => r.getAttribute('data-tipo') === item.tipo);
+            
+            if (row) {
+                // Atualiza os valores simulados
+                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada, 'inteiro');
+                row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado, 'inteiro');
+                
+                // Preenche os inputs com os valores simulados
+                // const inputCarteira = row.querySelector('input[name="carteira"]');
+                // if (inputCarteira && !inputCarteira.value) {
+                //     inputCarteira.value = item.carteiraSimulada;
+                // }
+
+                // Para o campo de carteira, mostre apenas o ajuste, não o valor total
+                const inputCarteira = row.querySelector('input[name="carteira"]');
+                if (inputCarteira) {
+                    const valorReal = parseFloat(inputCarteira.getAttribute('data-carteira-real'));
+                    const ajuste = item.carteiraSimulada - valorReal;
+                    // inputCarteira.value = ajuste;
+        
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputCarteira.value = '';
+                    }
+                }
+                
+                // Para o campo de spread, mostre apenas o ajuste, não o valor total
+                const inputSpread = row.querySelector('input[name="spread"]');
+                if (inputSpread) {
+                    const valorReal = parseFloat(inputSpread.getAttribute('data-spread-real'));
+                    const ajuste = item.spreadSimulado - valorReal;
+                    
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputSpread.value = '';
+                    } 
+                    // else {
+                    //     inputSpread.value = ajuste.toFixed(2); // Formata o ajuste com 2 casas decimais
+                    // }
+                }
+                
+                const inputProvisao = row.querySelector('input[name="provisao"]');
+                if (inputProvisao && !inputProvisao.value) {
+                    const valorReal = parseFloat(inputProvisao.getAttribute('data-provisao-real'));
+                    const ajuste = item.provisaoSimulada - valorReal;
+                    
+                    if (ajuste === 0) {
+                        inputProvisao.value = '';
+                    } 
+                    // inputProvisao.value = Math.round(ajuste);
+                    // inputProvisao.value = Math.round(item.provisaoSimulada);
+                }
+            }
+        }
+    });
+}
+
 // Atualiza a tabela de captações com os dados fornecidos
 export function atualizarTabelaCaptacoes(dados, isSimulado) {
     const tbody = document.getElementById('captacoes-body');
@@ -358,15 +704,32 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             inputCarteira.value = ""; // Campo vazio para permitir digitar sinal negativo
             
             // Adicione o valor real como atributo de dados
+    
+            // // Armazena o valor real para referência
             inputCarteira.setAttribute('data-carteira-real', item.carteira);
-            
+            let previousValueCarteira = '';
             // Adicionar validação para aceitar apenas números com sinal
             inputCarteira.addEventListener('input', (e) => {
-                // Permitir apenas dígitos e sinal de menos
+                // Permitir apenas dígitos, sinal de menos e vírgula/ponto
+                // console.log(e)
                 const regex = /^-?\d*$/;
-                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
-                    e.target.value = e.target.value.replace(/[^\d-]/g, '');
+                // if (e.key === '-' && this.selectionStart === 0) {
+                //     // console.log(this.selectionStart)
+                //     return true;
+                // } else
+                // console.log((!regex.test(e.target.value) && e.target.value !== ''))
+                
+                console.log((regex.test(e.target.value)))
+                if (!regex.test(e.target.value)) {
+                    // Se não for válido, limpe caracteres inválidos
+                    // e.target.value = e.target.value.replace(/[^\d]/g, '');
+                    e.target.value = previousValueCarteira;
+                } else {
+                    // Se for válido, armazene o valor atual
+                    previousValueCarteira = e.target.value;
                 }
+                console.log("previous", previousValueCarteira)
+
             });
 
             // Desabilita o input para o tipo "demais"
@@ -383,22 +746,42 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             row.appendChild(cellSpread);
             
             // Adiciona a célula de spread simulado (input)
+            // Na parte onde cria os inputs de spread
             const cellSpreadSimulado = document.createElement('td');
             const inputSpread = document.createElement('input');
-            inputSpread.type = 'text';
+            inputSpread.type = 'text'; // Mudando para text em vez de number
             inputSpread.name = 'spread';
             inputSpread.className = 'spread-simulado';
-            inputSpread.placeholder = formatarValor(item.spread, 'spread');
-            inputSpread.step = '0.01';
-            
-            // Preenche o valor do input com o valor real (ERRO 1)
-            inputSpread.value = formatarValor(item.spread, 'spread');
+            inputSpread.placeholder = "0"; // Mostra zero como placeholder
+            inputSpread.value = ""; // Campo vazio inicialmente
+
+            // Adicionar validação para aceitar apenas números com sinal
+            inputSpread.setAttribute('data-spread-real', item.spread);
+            let previousValue = '';
+            // Adicionar validação para aceitar apenas números com sinal
+            inputSpread.addEventListener('input', (e) => {
+                // Permitir apenas números, vírgula e sinal negativo
+                const regex = /^-?\d*([.,]\d*)?$/;
+                console.log(regex.test(e.target.value))
+                // console.log(e.target.value !== '-')
+                // console.log(e.target.value !== '')
+                // console.log(e.target.value)
+                if (!regex.test(e.target.value)) {
+                    // Se não for válido, limpe caracteres inválidos
+                    // e.target.value = e.target.value.replace(/[^\d]/g, '');
+                    e.target.value = previousValue;
+                } else {
+                    // Se for válido, armazene o valor atual
+                    previousValue = e.target.value;
+                }
+                console.log("previous", previousValue)
+            });
 
             // Desabilita o input para o tipo "demais"
             if (item.tipo.toLowerCase() === 'demais') {
                 inputSpread.disabled = true;
             }
-            
+
             cellSpreadSimulado.appendChild(inputSpread);
             row.appendChild(cellSpreadSimulado);
             
@@ -432,14 +815,24 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
                     // Se o ajuste for 0, deixe o campo vazio
                     if (ajuste === 0) {
                         inputCarteira.value = '';
-                    } else {
-                        inputCarteira.value = ajuste;
-                    }
+                    } 
+                    // else {
+                    //     inputCarteira.value = ajuste;
+                    // }
                 }
-                
+
                 const inputSpread = row.querySelector('input[name="spread"]');
                 if (inputSpread) {
-                    inputSpread.value = formatarValor(item.spreadSimulado, 'spread');
+                    const valorReal = parseFloat(inputSpread.getAttribute('data-spread-real'));
+                    const ajuste = item.spreadSimulado - valorReal;
+                    
+                    // Se o ajuste for 0, deixe o campo vazio
+                    if (ajuste === 0) {
+                        inputSpread.value = '';
+                    } 
+                    // else {
+                    //     inputSpread.value = ajuste.toFixed(2); // Formata o ajuste com 2 casas decimais
+                    // }
                 }
             }
         }
@@ -495,14 +888,29 @@ export function atualizarTabelaComissoes(dados, isSimulado) {
 
             // Adicione o valor real como atributo de dados
             inputValor.setAttribute('data-valor-real', item.valor);
-
+            let previousValueCarteira = '';
             // Adicionar validação para aceitar apenas números com sinal
             inputValor.addEventListener('input', (e) => {
-                // Permitir apenas dígitos e sinal de menos
+                // Permitir apenas dígitos, sinal de menos e vírgula/ponto
+                // console.log(e)
                 const regex = /^-?\d*$/;
-                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
-                    e.target.value = e.target.value.replace(/[^\d-]/g, '');
+                // if (e.key === '-' && this.selectionStart === 0) {
+                //     // console.log(this.selectionStart)
+                //     return true;
+                // } else
+                // console.log((!regex.test(e.target.value) && e.target.value !== ''))
+                
+                console.log((regex.test(e.target.value)))
+                if (!regex.test(e.target.value)) {
+                    // Se não for válido, limpe caracteres inválidos
+                    // e.target.value = e.target.value.replace(/[^\d]/g, '');
+                    e.target.value = previousValueCarteira;
+                } else {
+                    // Se for válido, armazene o valor atual
+                    previousValueCarteira = e.target.value;
                 }
+                console.log("previous", previousValueCarteira)
+            
             });
 
             // Desabilita o input para o tipo "demais"
@@ -896,212 +1304,4 @@ export function atualizarListaAjustes() {
             listaAjustesComissoes.appendChild(item);
         });
     }
-}
-
-export function atualizarTabelaCredito(dados, isSimulado) {
-    const tbody = document.getElementById('credito-body');
-    
-    if (!tbody) return;
-    
-    // Se for para exibir dados reais, limpa a tabela primeiro
-    if (!isSimulado) {
-        tbody.innerHTML = '';
-    }
-    
-    // Percorre os dados e insere ou atualiza as linhas na tabela
-    dados.forEach(item => {
-        let row;
-        
-        if (!isSimulado) {
-            // Cria uma nova linha para dados reais
-            row = document.createElement('tr');
-            row.setAttribute('data-tipo', item.tipo);
-            row.setAttribute('data-carteira-real', item.carteira);
-            row.setAttribute('data-spread-real', item.spread);
-            row.setAttribute('data-provisao-real', item.provisao);
-            row.setAttribute('data-margem-real', item.margem);
-            row.setAttribute('data-rwa-real', item.rwa);
-
-            if (item.tipo.toLowerCase() === 'demais') {
-                row.style.backgroundColor = '#f8f8f8'; // Fundo cinza claro
-                row.style.fontStyle = 'italic'; // Texto em itálico
-                row.classList.add('row-demais');
-                // inputCarteira.classList.add('input-demais');
-                // inputSpread.classList.add('input-demais');
-            }
-            
-            // Adiciona o nome do tipo de produto
-            const cellTipo = document.createElement('td');
-            cellTipo.textContent = formatarNomeProduto(item.tipo);
-            row.appendChild(cellTipo);
-            
-            // Adiciona a célula de carteira real
-            const cellCarteira = document.createElement('td');
-            cellCarteira.textContent = formatarValor(item.carteira, 'inteiro');
-            row.appendChild(cellCarteira);
-            
-            // Adiciona a célula de carteira simulada (input)
-            const cellCarteiraSimulada = document.createElement('td');
-            const inputCarteira = document.createElement('input');
-            inputCarteira.type = 'text';
-            inputCarteira.name = 'carteira';
-            inputCarteira.className = 'carteira-simulada';
-            // inputCarteira.placeholder = formatarValor(item.carteira, 'inteiro');
-            inputCarteira.placeholder = "0"; // Mostra que é um ajuste
-            inputCarteira.value = ""; // Começa com 0 (sem ajuste)
-            // inputCarteira.step = "any"; // Permite qualquer incremento, incluindo números negativos
-
-            // Adicionar validação para aceitar apenas números com sinal
-            inputCarteira.addEventListener('input', (e) => {
-                // Permitir apenas dígitos, sinal de menos e vírgula/ponto
-                const regex = /^-?\d*\.?\d*$/;
-                if (!regex.test(e.target.value) && e.target.value !== '-' && e.target.value !== '') {
-                    e.target.value = e.target.value.replace(/[^\d.-]/g, '');
-                }
-            });
-
-            // Adicione isso:
-            inputCarteira.addEventListener('keydown', function(e) {
-                // Permite o sinal de menos, mesmo quando o campo está vazio
-                if (e.key === '-' && this.selectionStart === 0) {
-                    // Não faz nada, deixa o sinal de menos ser inserido
-                    return true;
-                }
-            });
-    
-            // // Armazena o valor real para referência
-            inputCarteira.setAttribute('data-carteira-real', item.carteira);
-
-            // Para manter o comportamento semelhante a um campo numérico
-            // inputCarteira.addEventListener('input', function() {
-            //     // Permite números e o sinal negativo no início
-            //     if (!/^-?\d*$/.test(this.value) && this.value !== '-') {
-            //         this.value = this.value.replace(/[^\d-]/g, '');
-            //     }
-            // });
-            
-            // Desabilita o input para o tipo "demais"
-            if (item.tipo.toLowerCase() === 'demais') {
-                inputCarteira.disabled = true;
-            }
-            
-            cellCarteiraSimulada.appendChild(inputCarteira);
-            row.appendChild(cellCarteiraSimulada);
-
-            // Verificar propriedades do input
-            console.log("Propriedades do input:", {
-                type: inputCarteira.type,
-                readOnly: inputCarteira.readOnly,
-                disabled: inputCarteira.disabled,
-                contentEditable: inputCarteira.contentEditable
-            });
-            
-            // Adiciona a célula de spread real
-            const cellSpread = document.createElement('td');
-            cellSpread.textContent = formatarValor(item.spread, 'spread');
-            row.appendChild(cellSpread);
-            
-            // Adiciona a célula de spread simulado (input)
-            const cellSpreadSimulado = document.createElement('td');
-            const inputSpread = document.createElement('input');
-            inputSpread.type = 'number';
-            inputSpread.name = 'spread';
-            inputSpread.className = 'spread-simulado';
-            inputSpread.placeholder = formatarValor(item.spread, 'spread');
-            inputSpread.step = '0.01';
-            
-            // Desabilita o input para o tipo "demais"
-            if (item.tipo.toLowerCase() === 'demais') {
-                inputSpread.disabled = true;
-            }
-            
-            cellSpreadSimulado.appendChild(inputSpread);
-            row.appendChild(cellSpreadSimulado);
-            
-            // Adiciona a célula de provisão real
-            const cellProvisao = document.createElement('td');
-            cellProvisao.textContent = formatarValor(item.provisao, 'inteiro');
-            row.appendChild(cellProvisao);
-            
-            // Adiciona a célula de provisão simulada (input)
-            const cellProvisaoSimulada = document.createElement('td');
-            const inputProvisao = document.createElement('input');
-            inputProvisao.type = 'number';
-            inputProvisao.name = 'provisao';
-            inputProvisao.className = 'provisao-simulada';
-            inputProvisao.placeholder = formatarValor(item.provisao, 'inteiro');
-            
-            // Desabilita o input para o tipo "demais"
-            if (item.tipo.toLowerCase() === 'demais') {
-                inputProvisao.disabled = true;
-            }
-            
-            cellProvisaoSimulada.appendChild(inputProvisao);
-            row.appendChild(cellProvisaoSimulada);
-            
-            // Adiciona a célula de margem real
-            const cellMargem = document.createElement('td');
-            cellMargem.textContent = formatarValor(item.margem, 'inteiro');
-            row.appendChild(cellMargem);
-            
-            // Adiciona a célula de margem simulada (calculada)
-            const cellMargemSimulada = document.createElement('td');
-            cellMargemSimulada.className = 'margem-simulada';
-            cellMargemSimulada.textContent = formatarValor(item.margem, 'inteiro');
-            row.appendChild(cellMargemSimulada);
-            
-            // Adiciona a célula de RWA real
-            const cellRWA = document.createElement('td');
-            cellRWA.textContent = formatarValor(item.rwa, 'inteiro');
-            row.appendChild(cellRWA);
-            
-            // Adiciona a célula de RWA simulado (calculado)
-            const cellRWASimulado = document.createElement('td');
-            cellRWASimulado.className = 'rwa-simulado';
-            cellRWASimulado.textContent = formatarValor(item.rwa, 'inteiro');
-            row.appendChild(cellRWASimulado);
-            
-            tbody.appendChild(row);
-        } else {
-            // Para dados simulados, atualiza os valores nas células existentes
-            row = [...tbody.querySelectorAll('tr')].find(r => r.getAttribute('data-tipo') === item.tipo);
-            
-            if (row) {
-                // Atualiza os valores simulados
-                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada, 'inteiro');
-                row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado, 'inteiro');
-                
-                // Preenche os inputs com os valores simulados
-                // const inputCarteira = row.querySelector('input[name="carteira"]');
-                // if (inputCarteira && !inputCarteira.value) {
-                //     inputCarteira.value = item.carteiraSimulada;
-                // }
-
-                // Para o campo de carteira, mostre apenas o ajuste, não o valor total
-                const inputCarteira = row.querySelector('input[name="carteira"]');
-                if (inputCarteira) {
-                    const valorReal = parseFloat(inputCarteira.getAttribute('data-carteira-real'));
-                    const ajuste = item.carteiraSimulada - valorReal;
-                    // inputCarteira.value = ajuste;
-        
-                    // Se o ajuste for 0, deixe o campo vazio
-                    if (ajuste === 0) {
-                        inputCarteira.value = '';
-                    } else {
-                        inputCarteira.value = ajuste;
-                    }
-                }
-                
-                const inputSpread = row.querySelector('input[name="spread"]');
-                if (inputSpread && !inputSpread.value) {
-                    inputSpread.value = formatarValor(item.spreadSimulado, 'spread');
-                }
-                
-                const inputProvisao = row.querySelector('input[name="provisao"]');
-                if (inputProvisao && !inputProvisao.value) {
-                    inputProvisao.value = Math.round(item.provisaoSimulada);
-                }
-            }
-        }
-    });
 }

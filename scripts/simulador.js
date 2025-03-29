@@ -171,7 +171,9 @@ export function registrarAjusteCredito(tipoProduto, campo, valorReal, valorSimul
             if (row) {
                 const inputProvisao = row.querySelector('input[name="provisao"]');
                 if (inputProvisao) {
-                    inputProvisao.value = Math.round(novaProvisao);
+                    // Atualiza o valor do input de provisão com a diferença calculada
+                    inputProvisao.value = Math.round(novaProvisao - itemCredito.provisao);
+                    // inputProvisao.value = Math.round(novaProvisao);
                     // Dispara um evento de input para atualizar o ajuste de provisão
                     const event = new Event('input', { bubbles: true });
                     inputProvisao.dispatchEvent(event);
@@ -259,147 +261,7 @@ export function registrarAjusteComissao(tipoProduto, valorReal, valorSimulado) {
     atualizarDadosSimulados();
 }
 
-// Atualiza a soma das diferenças para os cálculos
-// Atualiza a soma das diferenças para os cálculos
-// function atualizarSomaDiferencas() {
-//   const { ajustes, segmentoAtual } = estadoSimulador;
-//   let somaMargemCredito = 0;
-//   let somaMargemCaptacao = 0;
-//   let somaComissoes = 0;
-//   let somaProvisao = 0;
-//   let somaRWA = 0;
-  
-//   console.log("Atualizando somas de diferenças para o segmento:", segmentoAtual);
-  
-//   // Soma diferenças de crédito (apenas do segmento atual)
-//   Object.keys(ajustes.credito).forEach(chave => {
-//       // Verifica se o ajuste pertence ao segmento atual
-//       if (chave.startsWith(`${segmentoAtual}-`)) {
-//           console.log("Processando ajuste de crédito:", chave);
-          
-//           // Verifica se há diferenças para carteira ou spread
-//           const ajusteCredito = ajustes.credito[chave];
-          
-//           // Calcular as diferenças de margem através de carteira e spread
-//           if (ajusteCredito.carteira || ajusteCredito.spread) {
-//               // Obter os dados reais do crédito
-//               const dadosCredito = obterDadosCreditoReais();
-//               const [, tipo] = chave.split('-'); // Extrair o tipo do produto da chave
-//               const itemCredito = dadosCredito.find(item => item.tipo === tipo);
-              
-//               if (itemCredito) {
-//                   // Valores originais
-//                   const carteiraOriginal = itemCredito.carteira;
-//                   const spreadOriginal = itemCredito.spread;
-                  
-//                   // Valores ajustados
-//                   const carteiraAjustada = ajusteCredito.carteira ? ajusteCredito.carteira.simulado : carteiraOriginal;
-//                   const spreadAjustado = ajusteCredito.spread ? ajusteCredito.spread.simulado : spreadOriginal;
-                  
-//                   // Calcular margens
-//                   const margemOriginal = carteiraOriginal * (spreadOriginal / 100);
-//                   const margemAjustada = carteiraAjustada * (spreadAjustado / 100);
-                  
-//                   // Diferença de margem
-//                   const diferencaMargem = margemAjustada - margemOriginal;
-//                   console.log(`Crédito ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
-//                   somaMargemCredito += diferencaMargem;
-//               }
-//           }
-          
-//           // Adicionar diferenças de provisão
-//           if (ajusteCredito.provisao) {
-//               somaProvisao += ajusteCredito.provisao.diferenca;
-//               console.log(`Crédito ${chave}: Diferença provisão=${ajusteCredito.provisao.diferenca}`);
-//           }
-          
-//           // Calcular as diferenças de RWA através de carteira
-//           if (ajusteCredito.carteira) {
-//               // Obter os dados reais do crédito
-//               const dadosCredito = obterDadosCreditoReais();
-//               const [, tipo] = chave.split('-'); // Extrair o tipo do produto da chave
-//               const itemCredito = dadosCredito.find(item => item.tipo === tipo);
-              
-//               if (itemCredito && itemCredito.carteira > 0) {
-//                   // Valores originais
-//                   const carteiraOriginal = itemCredito.carteira;
-//                   const rwaOriginal = itemCredito.rwa;
-                  
-//                   // Valores ajustados
-//                   const carteiraAjustada = ajusteCredito.carteira.simulado;
-                  
-//                   // Calcular RWA ajustado
-//                   const rwaAjustado = (rwaOriginal / carteiraOriginal) * carteiraAjustada;
-                  
-//                   // Diferença de RWA
-//                   const diferencaRWA = rwaAjustado - rwaOriginal;
-//                   console.log(`Crédito ${tipo}: RWA original=${rwaOriginal}, RWA ajustado=${rwaAjustado}, Diferença=${diferencaRWA}`);
-//                   somaRWA += diferencaRWA;
-//               }
-//           }
-//       }
-//   });
-  
-//   // Soma diferenças de margem de captação (apenas do segmento atual)
-//   Object.keys(ajustes.captacoes).forEach(chave => {
-//       // Verifica se o ajuste pertence ao segmento atual
-//       if (chave.startsWith(`${segmentoAtual}-`)) {
-//           console.log("Processando ajuste de captação:", chave);
-          
-//           // Verifica se há diferenças para carteira ou spread
-//           const ajusteCaptacao = ajustes.captacoes[chave];
-          
-//           // Calcular as diferenças de margem através de carteira e spread
-//           if (ajusteCaptacao.carteira || ajusteCaptacao.spread) {
-//               // Obter os dados reais de captação
-//               const dadosCaptacoes = obterDadosCaptacoesReais();
-//               const [, tipo] = chave.split('-'); // Extrair o tipo do produto da chave
-//               const itemCaptacao = dadosCaptacoes.find(item => item.tipo === tipo);
-              
-//               if (itemCaptacao) {
-//                   // Valores originais
-//                   const carteiraOriginal = itemCaptacao.carteira;
-//                   const spreadOriginal = itemCaptacao.spread;
-                  
-//                   // Valores ajustados
-//                   const carteiraAjustada = ajusteCaptacao.carteira ? ajusteCaptacao.carteira.simulado : carteiraOriginal;
-//                   const spreadAjustado = ajusteCaptacao.spread ? ajusteCaptacao.spread.simulado : spreadOriginal;
-                  
-//                   // Calcular margens
-//                   const margemOriginal = carteiraOriginal * (spreadOriginal / 100);
-//                   const margemAjustada = carteiraAjustada * (spreadAjustado / 100);
-                  
-//                   // Diferença de margem
-//                   const diferencaMargem = margemAjustada - margemOriginal;
-//                   console.log(`Captação ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
-//                   somaMargemCaptacao += diferencaMargem;
-//               }
-//           }
-//       }
-//   });
-  
-//   // Soma diferenças de comissões (apenas do segmento atual)
-//   Object.keys(ajustes.comissoes).forEach(chave => {
-//       // Verifica se o ajuste pertence ao segmento atual
-//       if (chave.startsWith(`${segmentoAtual}-`)) {
-//           console.log("Processando ajuste de comissão:", chave);
-//           const ajusteComissao = ajustes.comissoes[chave];
-//           somaComissoes += ajusteComissao.diferenca;
-//           console.log(`Comissão ${chave}: Diferença=${ajusteComissao.diferenca}`);
-//       }
-//   });
-  
-//   // Atualiza o estado
-//   estadoSimulador.somaDiferencas = {
-//       margem: somaMargemCredito + somaMargemCaptacao + somaComissoes,
-//       provisao: somaProvisao,
-//       rwa: somaRWA
-//   };
-  
-//   console.log("Somas das diferenças atualizadas:", estadoSimulador.somaDiferencas);
-// }
-
-function atualizarSomaDiferencas() {
+export function atualizarSomaDiferencas() {
   const { segmentoAtual } = estadoSimulador;
   
   // Calcula as somas apenas para o segmento atual
@@ -407,8 +269,6 @@ function atualizarSomaDiferencas() {
   
   // Atualiza o estado com as somas calculadas
   estadoSimulador.somaDiferencas = somaDiferencaSegmento;
-  
-  console.log("Somas das diferenças atualizadas:", estadoSimulador.somaDiferencas);
 }
 
 // Atualiza os dados reais na interface
@@ -434,6 +294,7 @@ export function atualizarDadosReais() {
 export function atualizarDadosSimulados() {
     // Atualiza a tabela de crédito com dados simulados
     const dadosCreditoSimulado = obterDadosCreditoSimulados();
+    console.log("dadosCreditoSimulado", dadosCreditoSimulado);
     atualizarTabelaCredito(dadosCreditoSimulado, true);
     
     // Atualiza a tabela de captações com dados simulados
@@ -509,6 +370,7 @@ export function obterDadosCreditoSimulados() {
         
         // Obtém valores ajustados ou mantém os originais (com prefixo de segmento)
         const carteiraSimulada = ajusteItemSegmento.carteira ? ajusteItemSegmento.carteira.simulado : item.carteira;
+        // const provisaoSimulada = ajusteItemSegmento.provisao ? ajusteItemSegmento.provisao.simulado : item.provisao;
         const spreadSimulado = ajusteItemSegmento.spread ? ajusteItemSegmento.spread.simulado : item.spread;
         const provisaoOriginal = item.provisao;
         const carteiraOriginal = item.carteira;
@@ -529,7 +391,7 @@ export function obterDadosCreditoSimulados() {
         // Calcula o RWA simulado
         let rwaSimulado = item.rwa;
         if (carteiraOriginal > 0) {
-            rwaSimulado = (item.rwa / carteiraOriginal) * carteiraSimulada;
+            rwaSimulado = Math.round(item.rwa / carteiraOriginal * carteiraSimulada);
         }
         
         return {
@@ -671,7 +533,6 @@ export function obterDadosCascadaReais() {
 }
 
 // Obtém os dados de cascada simulados
-// Obtém os dados de cascada simulados
 export function obterDadosCascadaSimulados() {
   const { dados, segmentoAtual, visualizacaoCascada } = estadoSimulador;
   
@@ -697,8 +558,8 @@ export function obterDadosCascadaSimulados() {
       somaDiferencas = calcularSomaDiferencasSegmento(segmentoAtual);
   }
   
-  console.log(`Calculando cascada simulada para fonte: ${fonte}, visualização: ${visualizacaoCascada}`);
-  console.log("Diferenças usadas no cálculo:", somaDiferencas);
+  // console.log(`Calculando cascada simulada para fonte: ${fonte}, visualização: ${visualizacaoCascada}`);
+  // console.log("Diferenças usadas no cálculo:", somaDiferencas);
   
   // Calcula os valores simulados conforme as regras de negócio
   const mobSimulado = dadosReais.mob + somaDiferencas.margem;
@@ -706,7 +567,7 @@ export function obterDadosCascadaSimulados() {
   
   // Aqui está o cálculo do MOL - verificar que está correto
   const molSimulado = mobSimulado - Math.abs(pddSimulado);
-  console.log(`MOL: MOB(${mobSimulado}) - PDD(${Math.abs(pddSimulado)}) = ${molSimulado}`);
+  // console.log(`MOL: MOB(${mobSimulado}) - PDD(${Math.abs(pddSimulado)}) = ${molSimulado}`);
     
     const demaisAtivosSimulado = dadosReais.demais_ativos; // Sempre igual ao real
     const orypSimulado = dadosReais.oryp; // Sempre igual ao real
@@ -744,7 +605,7 @@ export function obterDadosCascadaSimulados() {
         return (simulado / ppto) * 100;
     };
 
-    console.log("diferenças", somaDiferencas)
+    // console.log("diferenças", somaDiferencas)
     
     return {
         mob: mobSimulado,
@@ -774,7 +635,6 @@ export function obterDadosCascadaSimulados() {
     };
 }
 
-
 // Nova função para calcular a soma das diferenças para todos os segmentos
 function calcularSomaDiferencasTodosSegmentos() {
   const { ajustes, dados } = estadoSimulador;
@@ -784,7 +644,7 @@ function calcularSomaDiferencasTodosSegmentos() {
   let somaProvisao = 0;
   let somaRWA = 0;
   
-  console.log("Calculando somas de diferenças para TODOS os segmentos");
+  // console.log("Calculando somas de diferenças para TODOS os segmentos");
   
   // Processa todos os ajustes de crédito em todos os segmentos
   Object.keys(ajustes.credito).forEach(chaveComposta => {
@@ -810,14 +670,14 @@ function calcularSomaDiferencasTodosSegmentos() {
               // Diferença de margem
               const diferencaMargem = margemAjustada - margemOriginal;
               somaMargemCredito += diferencaMargem;
-              console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença margem=${diferencaMargem}`);
+              // console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença margem=${diferencaMargem}`);
           }
       }
       
       // Adicionar diferenças de provisão
       if (ajusteCredito.provisao) {
           somaProvisao += ajusteCredito.provisao.diferenca;
-          console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença provisão=${ajusteCredito.provisao.diferenca}`);
+          // console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença provisão=${ajusteCredito.provisao.diferenca}`);
       }
       
       // Calcular as diferenças de RWA
@@ -837,7 +697,7 @@ function calcularSomaDiferencasTodosSegmentos() {
                   // Diferença de RWA
                   const diferencaRWA = rwaAjustado - rwaOriginal;
                   somaRWA += diferencaRWA;
-                  console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença RWA=${diferencaRWA}`);
+                  // console.log(`[Total] Crédito ${segmento}-${tipo}: Diferença RWA=${diferencaRWA}`);
               }
           }
       }
@@ -867,7 +727,7 @@ function calcularSomaDiferencasTodosSegmentos() {
               // Diferença de margem
               const diferencaMargem = margemAjustada - margemOriginal;
               somaMargemCaptacao += diferencaMargem;
-              console.log(`[Total] Captação ${segmento}-${tipo}: Diferença margem=${diferencaMargem}`);
+              // console.log(`[Total] Captação ${segmento}-${tipo}: Diferença margem=${diferencaMargem}`);
           }
       }
   });
@@ -878,7 +738,7 @@ function calcularSomaDiferencasTodosSegmentos() {
       const ajusteComissao = ajustes.comissoes[chaveComposta];
       
       somaComissoes += ajusteComissao.diferenca;
-      console.log(`[Total] Comissão ${segmento}-${tipo}: Diferença=${ajusteComissao.diferenca}`);
+      // console.log(`[Total] Comissão ${segmento}-${tipo}: Diferença=${ajusteComissao.diferenca}`);
   });
   
   // Retorna o objeto com as somas
@@ -888,11 +748,10 @@ function calcularSomaDiferencasTodosSegmentos() {
       rwa: somaRWA
   };
   
-  console.log("[Total] Somas das diferenças de todos os segmentos:", resultado);
+  // console.log("[Total] Somas das diferenças de todos os segmentos:", resultado);
   return resultado;
 }
 
-// Função para calcular a soma das diferenças apenas para um segmento específico
 // Função para calcular a soma das diferenças apenas para um segmento específico
 function calcularSomaDiferencasSegmento(segmento) {
   const { ajustes, dados } = estadoSimulador;
@@ -902,13 +761,13 @@ function calcularSomaDiferencasSegmento(segmento) {
   let somaProvisao = 0;
   let somaRWA = 0;
   
-  console.log(`Calculando somas de diferenças para o segmento: ${segmento}`);
+  // console.log(`Calculando somas de diferenças para o segmento: ${segmento}`);
   
   // Soma diferenças de crédito (apenas do segmento especificado)
   Object.keys(ajustes.credito).forEach(chave => {
       // Verifica se o ajuste pertence ao segmento especificado
       if (chave.startsWith(`${segmento}-`)) {
-          console.log(`Processando ajuste de crédito: ${chave}`);
+          // console.log(`Processando ajuste de crédito: ${chave}`);
           
           // Verifica se há diferenças para carteira ou spread
           const ajusteCredito = ajustes.credito[chave];
@@ -932,7 +791,7 @@ function calcularSomaDiferencasSegmento(segmento) {
                   
                   // Diferença de margem
                   const diferencaMargem = margemAjustada - margemOriginal;
-                  console.log(`Crédito ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
+                  // console.log(`Crédito ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
                   somaMargemCredito += diferencaMargem;
               }
           }
@@ -940,7 +799,7 @@ function calcularSomaDiferencasSegmento(segmento) {
           // Adicionar diferenças de provisão
           if (ajusteCredito.provisao) {
               somaProvisao += ajusteCredito.provisao.diferenca;
-              console.log(`Crédito ${chave}: Diferença provisão=${ajusteCredito.provisao.diferenca}`);
+              // console.log(`Crédito ${chave}: Diferença provisão=${ajusteCredito.provisao.diferenca}`);
           }
           
           // Calcular as diferenças de RWA através de carteira
@@ -960,7 +819,7 @@ function calcularSomaDiferencasSegmento(segmento) {
                       
                       // Diferença de RWA
                       const diferencaRWA = rwaAjustado - rwaOriginal;
-                      console.log(`Crédito ${tipo}: RWA original=${rwaOriginal}, RWA ajustado=${rwaAjustado}, Diferença=${diferencaRWA}`);
+                      // console.log(`Crédito ${tipo}: RWA original=${rwaOriginal}, RWA ajustado=${rwaAjustado}, Diferença=${diferencaRWA}`);
                       somaRWA += diferencaRWA;
                   }
               }
@@ -972,7 +831,7 @@ function calcularSomaDiferencasSegmento(segmento) {
   Object.keys(ajustes.captacoes).forEach(chave => {
       // Verifica se o ajuste pertence ao segmento especificado
       if (chave.startsWith(`${segmento}-`)) {
-          console.log(`Processando ajuste de captação: ${chave}`);
+          // console.log(`Processando ajuste de captação: ${chave}`);
           
           // Verifica se há diferenças para carteira ou spread
           const ajusteCaptacao = ajustes.captacoes[chave];
@@ -995,7 +854,7 @@ function calcularSomaDiferencasSegmento(segmento) {
                   
                   // Diferença de margem
                   const diferencaMargem = margemAjustada - margemOriginal;
-                  console.log(`Captação ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
+                  // console.log(`Captação ${tipo}: Margem original=${margemOriginal}, Margem ajustada=${margemAjustada}, Diferença=${diferencaMargem}`);
                   somaMargemCaptacao += diferencaMargem;
               }
           }
@@ -1006,10 +865,10 @@ function calcularSomaDiferencasSegmento(segmento) {
   Object.keys(ajustes.comissoes).forEach(chave => {
       // Verifica se o ajuste pertence ao segmento especificado
       if (chave.startsWith(`${segmento}-`)) {
-          console.log(`Processando ajuste de comissão: ${chave}`);
+          // console.log(`Processando ajuste de comissão: ${chave}`);
           const ajusteComissao = ajustes.comissoes[chave];
           somaComissoes += ajusteComissao.diferenca;
-          console.log(`Comissão ${chave}: Diferença=${ajusteComissao.diferenca}`);
+          // console.log(`Comissão ${chave}: Diferença=${ajusteComissao.diferenca}`);
       }
   });
   
@@ -1020,10 +879,9 @@ function calcularSomaDiferencasSegmento(segmento) {
       rwa: somaRWA
   };
   
-  console.log(`[${segmento}] Somas das diferenças do segmento:`, resultado);
+  // console.log(`[${segmento}] Somas das diferenças do segmento:`, resultado);
   return resultado;
 }
-
 
 // Retorna a lista de ajustes para exibição na UI
 export function obterListaAjustes() {
@@ -1102,7 +960,7 @@ export function obterListaAjustes() {
 }
 
 // Otimiza o portfólio automaticamente (função exemplo)
-export function otimizarPortfolio() {
-    // Lógica de otimização específica a ser implementada
-    alert('Funcionalidade de otimização a ser implementada!');
-}
+// export function otimizarPortfolio() {
+//     // Lógica de otimização específica a ser implementada
+//     alert('Funcionalidade de otimização a ser implementada!');
+// }

@@ -13,10 +13,10 @@ export async function carregarIndicadores() {
         }
         
         const dados = await resposta.json();
-        console.log('Dados carregados com sucesso!');
+        // console.log('Dados carregados com sucesso!');
         return dados;
     } catch (erro) {
-        console.error('Erro ao carregar indicadores:', erro);
+        // console.error('Erro ao carregar indicadores:', erro);
         throw erro;
     }
 }
