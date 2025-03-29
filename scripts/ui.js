@@ -599,8 +599,9 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             
             if (row) {
                 // Atualiza os valores simulados
-                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada, 'inteiro');
-                row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado, 'inteiro');
+                console.log("diferença margem", Math.round(item.margemSimulada - item.margem))
+                row.querySelector('.margem-simulada').textContent = formatarValor(Math.round(item.margemSimulada - item.margem), 'inteiro');
+                row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado - item.rwa , 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
                 // const inputCarteira = row.querySelector('input[name="carteira"]');
@@ -803,7 +804,7 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             
             if (row) {
                 // Atualiza os valores simulados
-                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada, 'inteiro');
+                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada - item.margem, 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
                 // Para o campo de carteira, mostre apenas o ajuste, não o valor total
@@ -1106,7 +1107,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
             
             // Adiciona classe para destacar mudanças
             const diferenca = valorSimulado - valorReal;
-            const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.05 : 0.5;
+            const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.01 : 0.1;
             
             if (Math.abs(diferenca) > epsilon) {
                 if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
@@ -1131,7 +1132,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         cellDiferenca.textContent = formatarValor(diferenca, item.formato);
         
         // Adiciona classe para destacar mudanças
-        const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.05 : 0.5;
+        const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.01 : 0.1;
         if (Math.abs(diferenca) > epsilon) {
             if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
                 cellDiferenca.classList.add('positivo');

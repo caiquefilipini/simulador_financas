@@ -374,6 +374,8 @@ export function obterDadosCreditoSimulados() {
         const spreadSimulado = ajusteItemSegmento.spread ? ajusteItemSegmento.spread.simulado : item.spread;
         const provisaoOriginal = item.provisao;
         const carteiraOriginal = item.carteira;
+        const margemOriginal = item.margem;
+        const rwaOriginal = item.rwa;
         
         // Calcula valores derivados com base nas regras de negócio
         let provisaoSimulada = provisaoOriginal;
@@ -386,11 +388,14 @@ export function obterDadosCreditoSimulados() {
         }
         
         // Calcula a margem simulada
-        const margemSimulada = carteiraSimulada * (spreadSimulado / 100);
+        let margemSimulada = item.margem;
+        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal){
+          margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
+        }
         
         // Calcula o RWA simulado
         let rwaSimulado = item.rwa;
-        if (carteiraOriginal > 0) {
+        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal) {
             rwaSimulado = Math.round(item.rwa / carteiraOriginal * carteiraSimulada);
         }
         
@@ -447,13 +452,22 @@ export function obterDadosCaptacoesSimulados() {
     return dadosReais.map(item => {
         // Busca ajustes específicos para este segmento e tipo
         const ajusteItemSegmento = ajustes.captacoes[`${segmentoAtual}-${item.tipo}`] || {};
-        
+        const carteiraOriginal = item.carteira;
         // Obtém valores ajustados ou mantém os originais
         const carteiraSimulada = ajusteItemSegmento.carteira ? ajusteItemSegmento.carteira.simulado : item.carteira;
         const spreadSimulado = ajusteItemSegmento.spread ? ajusteItemSegmento.spread.simulado : item.spread;
         
         // Calcula a margem simulada
-        const margemSimulada = carteiraSimulada * (spreadSimulado / 100);
+        // const margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
+        // let margemSimulada = item.margem;
+        // if (item.carteira > 0 && carteiraSimulada !== carteiraOriginal){
+        //   margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
+        // }
+
+        let margemSimulada = item.margem;
+        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal){
+          margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
+        }
         
         return {
             ...item,
