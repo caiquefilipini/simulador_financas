@@ -5,7 +5,7 @@
 
 import { formatarValor, obterTiposProduto, obterSegmentos } from './dados.js';
 import { atualizarTabelaCredito, atualizarTabelaCaptacoes, atualizarTabelaComissoes, 
-         atualizarTabelaCascada, atualizarListaAjustes } from './ui.js';
+         atualizarTabelaCascada, atualizarListaAjustes, formatarNomeProduto } from './ui.js';
 
 // Estado global do simulador
 let estadoSimulador = {
@@ -489,7 +489,6 @@ function addCellWithFormattingAndClass(row, value, format, inverseColor = false)
 }
 
 
-
 // Atualiza os dados simulados na interface
 export function atualizarDadosSimulados() {
     // Atualiza a tabela de crédito com dados simulados
@@ -853,7 +852,7 @@ export function obterDadosCascadaSimulados() {
 }
 
 // Nova função para calcular a soma das diferenças para todos os segmentos
-function calcularSomaDiferencasTodosSegmentos() {
+export function calcularSomaDiferencasTodosSegmentos() {
   const { ajustes, dados } = estadoSimulador;
   let somaMargemCredito = 0;
   let somaMargemCaptacao = 0;
@@ -970,7 +969,7 @@ function calcularSomaDiferencasTodosSegmentos() {
 }
 
 // Função para calcular a soma das diferenças apenas para um segmento específico
-function calcularSomaDiferencasSegmento(segmento) {
+export function calcularSomaDiferencasSegmento(segmento) {
   const { ajustes, dados } = estadoSimulador;
   let somaMargemCredito = 0;
   let somaMargemCaptacao = 0;
