@@ -3,7 +3,7 @@
  * Contém a lógica principal para os cálculos e simulações
  */
 
-import { formatarValor, obterTiposProduto } from './dados.js';
+import { formatarValor, obterTiposProduto, obterSegmentos } from './dados.js';
 import { atualizarTabelaCredito, atualizarTabelaCaptacoes, atualizarTabelaComissoes, 
          atualizarTabelaCascada, atualizarListaAjustes } from './ui.js';
 
@@ -35,6 +35,7 @@ export function inicializarSimulador(dados) {
     // Atualiza a interface com os dados iniciais
     atualizarDadosReais();
     atualizarDadosSimulados();
+    atualizarTabelaComparativoSegmentos();
 }
 
 // Obtém o estado atual do simulador
@@ -290,6 +291,205 @@ export function atualizarDadosReais() {
     atualizarTabelaCascada(dadosCascadaReal, null);
 }
 
+// Função para obter dados de todos os segmentos (real e simulado)
+export function obterDadosComparativoSegmentos() {
+    const { dados, ajustes } = estadoSimulador;
+    const segmentos = obterSegmentos(dados);
+    const resultado = [];
+    
+    // Para cada segmento, obtém os valores reais e calcula os simulados
+    segmentos.forEach(segmento => {
+        // Verifica se temos dados para este segmento
+        if (!dados[segmento] || !dados[segmento].cascada) {
+            return;
+        }
+        
+        // Obter dados reais
+        const dadosReais = dados[segmento].cascada.cascada;
+        
+        // Calcular diferenças específicas para este segmento
+        const somaDiferencas = calcularSomaDiferencasSegmento(segmento);
+        
+        // Calcular valores simulados
+        const mobSimulado = dadosReais.mob + somaDiferencas.margem;
+        const pddSimulado = dadosReais.pdd + somaDiferencas.provisao;
+        const rwaSimulado = dadosReais.rwa + somaDiferencas.rwa;
+        
+        // Calcular RORWA
+        const rorwaReal = dadosReais.rorwa;
+        const rorwaSimulado = rwaSimulado !== 0 
+            ? (dadosReais.bdi + somaDiferencas.margem - somaDiferencas.provisao) / rwaSimulado * 100 
+            : 0;
+        
+        // Adicionar ao resultado
+        resultado.push({
+            segmento: segmento,
+            mob: {
+                real: dadosReais.mob,
+                simulado: mobSimulado,
+                delta: mobSimulado - dadosReais.mob
+            },
+            rorwa: {
+                real: rorwaReal,
+                simulado: rorwaSimulado,
+                delta: rorwaSimulado - rorwaReal
+            },
+            pdd: {
+                real: dadosReais.pdd,
+                simulado: pddSimulado,
+                delta: pddSimulado - dadosReais.pdd
+            }
+        });
+    });
+    
+    // Adicionar o total
+    const dadosReaisTotal = dados.total.cascada.cascada;
+    const somaDiferencasTotal = calcularSomaDiferencasTodosSegmentos();
+    
+    const mobTotalSimulado = dadosReaisTotal.mob + somaDiferencasTotal.margem;
+    const pddTotalSimulado = dadosReaisTotal.pdd + somaDiferencasTotal.provisao;
+    const rwaTotalSimulado = dadosReaisTotal.rwa + somaDiferencasTotal.rwa;
+    
+    const rorwaTotalReal = dadosReaisTotal.rorwa;
+    const rorwaTotalSimulado = rwaTotalSimulado !== 0 
+        ? (dadosReaisTotal.bdi + somaDiferencasTotal.margem - somaDiferencasTotal.provisao) / rwaTotalSimulado * 100 
+        : 0;
+    
+    resultado.push({
+        segmento: 'total',
+        mob: {
+            real: dadosReaisTotal.mob,
+            simulado: mobTotalSimulado,
+            delta: mobTotalSimulado - dadosReaisTotal.mob
+        },
+        rorwa: {
+            real: rorwaTotalReal,
+            simulado: rorwaTotalSimulado,
+            delta: rorwaTotalSimulado - rorwaTotalReal
+        },
+        pdd: {
+            real: dadosReaisTotal.pdd,
+            simulado: pddTotalSimulado,
+            delta: pddTotalSimulado - dadosReaisTotal.pdd
+        }
+    });
+    
+    return resultado;
+}
+
+// Função para atualizar a tabela de comparativo de segmentos
+export function atualizarTabelaComparativoSegmentos() {
+    const tbody = document.getElementById('segmentos-body');
+    
+    if (!tbody) return;
+    
+    // Limpa a tabela
+    tbody.innerHTML = '';
+    
+    // Obtém os dados comparativos
+    const dadosComparativos = obterDadosComparativoSegmentos();
+    
+    // Mapeamento para formatar corretamente os nomes dos segmentos
+    const formatacaoSegmentos = {
+        "pj": "PJ",
+        "scib": "SCIB",
+        "private": "Private",
+        "select": "Select",
+        "especial": "Especial",
+        "prospera": "Prospera",
+        "consumer": "Consumer",
+        "corporate": "Corporate",
+        "total": "Total"
+    };
+    
+    // Adiciona as linhas para cada segmento
+    dadosComparativos.forEach(item => {
+        const row = document.createElement('tr');
+        
+        // Adiciona classe especial para a linha do total
+        if (item.segmento === 'total') {
+            row.classList.add('total-row');
+        }
+        
+        // Célula do nome do segmento
+        const cellSegmento = document.createElement('td');
+        cellSegmento.textContent = formatacaoSegmentos[item.segmento.toLowerCase()] || 
+                                 (item.segmento.charAt(0).toUpperCase() + item.segmento.slice(1));
+        row.appendChild(cellSegmento);
+
+        // Células de MOB
+        // const cellMobReal = addCellWithFormatting(row, item.mob.real, 'inteiro');
+        // cellMobReal.classList.add('coluna-real'); // Adiciona a classe para centralizar
+
+        // // Células de RORWA
+        // const cellRorwaReal = addCellWithFormatting(row, item.rorwa.real, 'rorwa');
+        // cellRorwaReal.classList.add('coluna-real'); // Adiciona a classe para centralizar
+
+        // // Células de PDD
+        // const cellPddReal = addCellWithFormatting(row, item.pdd.real, 'inteiro');
+        // cellPddReal.classList.add('coluna-real'); // Adiciona a classe para centralizar
+        
+        
+        // Células de MOB
+        const cellMobReal = addCellWithFormatting(row, item.mob.real, 'inteiro');
+        cellMobReal.classList.add('coluna-real');
+        addCellWithFormatting(row, item.mob.simulado, 'inteiro');
+        const cellMobDelta = addCellWithFormattingAndClass(row, item.mob.delta, 'inteiro');
+        cellMobDelta.classList.add('coluna-delta');
+        
+        // Células de RORWA
+        const cellRorwaReal = addCellWithFormatting(row, item.rorwa.real, 'rorwa');
+        cellRorwaReal.classList.add('coluna-real');
+        addCellWithFormatting(row, item.rorwa.simulado, 'rorwa');
+        addCellWithFormattingAndClass(row, item.rorwa.delta, 'rorwa', true);
+        
+        // Células de PDD (valores negativos representam provisões)
+        const cellPddReal = addCellWithFormatting(row, item.pdd.real, 'inteiro');
+        cellPddReal.classList.add('coluna-real');
+        addCellWithFormatting(row, item.pdd.simulado, 'inteiro');
+        const cellPddDelta = addCellWithFormattingAndClass(row, item.pdd.delta, 'inteiro', true);
+        // cellPddDelta.classList.add('coluna-real');
+
+
+
+        tbody.appendChild(row);
+    });
+}
+
+// Função auxiliar para adicionar células com formatação
+function addCellWithFormatting(row, value, format) {
+    const cell = document.createElement('td');
+    cell.textContent = formatarValor(value, format);
+    row.appendChild(cell);
+    return cell;
+}
+
+// Função auxiliar para adicionar células com formatação e classe
+function addCellWithFormattingAndClass(row, value, format, inverseColor = false) {
+    const cell = document.createElement('td');
+        // Trate valores muito próximos de zero
+    if (Math.abs(value) < 0.005) {
+        cell.textContent = "0";
+    } else {
+        cell.textContent = formatarValor(value, format);
+    }
+    
+    // Adiciona classe para estilo (positivo/negativo)
+    const isDelta = true;
+    if (isDelta && Math.abs(value) > 0.01) {
+        if ((!inverseColor && value > 0) || (inverseColor && value < 0)) {
+            cell.classList.add('positivo');
+        } else if ((!inverseColor && value < 0) || (inverseColor && value > 0)) {
+            cell.classList.add('negativo');
+        }
+    }
+    
+    row.appendChild(cell);
+    return cell;
+}
+
+
+
 // Atualiza os dados simulados na interface
 export function atualizarDadosSimulados() {
     // Atualiza a tabela de crédito com dados simulados
@@ -309,6 +509,9 @@ export function atualizarDadosSimulados() {
     const dadosCascadaSimulado = obterDadosCascadaSimulados();
     const dadosCascadaReal = obterDadosCascadaReais();
     atualizarTabelaCascada(dadosCascadaReal, dadosCascadaSimulado);
+
+    atualizarTabelaComparativoSegmentos();
+
 }
 
 // Obtém os dados de crédito reais para o segmento atual

@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Chama 🔥</title>
+    <title>Simulador Chama</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="icone.png">
+    <link rel="icon"  type="image/x-icon" href="icone.ico">
+    <!-- <link rel="icon" href="{{ url_for('static', filename='icone.ico') }}"> -->
+
 </head>
 <body>
     <div class="container">
@@ -200,6 +202,39 @@
                     </tr>
                 </table>
             </div>
+
+        <!-- Tabela com todos os segmentos -->
+        <div class="segmentos-comparacao-section">
+            <div class="segmentos-header">
+                <h2>Comparativo por Segmento</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="segmentos-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Segmento</th>
+                            <th class="coluna-real" colspan="3">MOB</th>
+                            <th colspan="3">RORWA</th>
+                            <th colspan="3">PDD</th>
+                        </tr>
+                        <tr>
+                            <th class="coluna-real" >Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                            <th>Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                            <th>Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="segmentos-body">
+                        <!-- Será preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <!-- Seção de Premissas -->
         <div class="premissas-section">

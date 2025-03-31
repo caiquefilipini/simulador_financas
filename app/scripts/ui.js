@@ -1110,9 +1110,13 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
             const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.01 : 0.1;
             
             if (Math.abs(diferenca) > epsilon) {
-                if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
+                if ((item.campo === 'rwa') && diferenca < 0) {
                     cellSimulado.classList.add('positivo');
-                } else if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca > 0) {
+                } else if ((item.campo === 'rwa') && diferenca > 0) {
+                    cellSimulado.classList.add('negativo');
+                } else if ((item.campo === 'rorwa') && diferenca > 0) {
+                    cellSimulado.classList.add('positivo');
+                } else if ((item.campo === 'rorwa') && diferenca < 0) {
                     cellSimulado.classList.add('negativo');
                 } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca < 0) {
                     cellSimulado.classList.add('positivo');

@@ -895,6 +895,80 @@ transition: all 0.2s;
 
 
 
+/* ===== TABELA COMPARATIVA SEGMENTOS ===== */
+.segmentos-comparacao-section {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.segmentos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.segmentos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.segmentos-table th, 
+.segmentos-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.segmentos-table th:first-child,
+.segmentos-table td:first-child {
+  text-align: left;
+}
+
+/* Adicione esta regra ao CSS */
+.segmentos-table td.coluna-real,
+.segmentos-table th.coluna-real {
+    text-align: center;
+}
+
+/* Adicione esta regra ao CSS */
+.segmentos-table td.coluna-delta,
+.segmentos-table th.coluna-delta {
+    text-align: center;
+}
+
+.segmentos-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.segmentos-table tr.total-row {
+  font-weight: bold;
+  background-color: #f0f8ff;
+}
+
+.segmentos-table tr.total-row td {
+  border-top: 2px solid #999;
+}
+
+.segmentos-table td.positivo {
+  color: green;
+}
+
+.segmentos-table td.negativo {
+  color: red;
+}
+
+/* Deixa a tabela responsiva em telas pequenas */
+@media screen and (max-width: 768px) {
+  .segmentos-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+  }
+}
+
+
 
 
 /* ===== RESPONSIVIDADE ===== */
