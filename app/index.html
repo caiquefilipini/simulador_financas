@@ -13,7 +13,7 @@
     <div class="container">
         <div class="titulo">
             <h1>Simulador de Resultados</h1>
-            <h4>(números fictícios)</h4>
+            <!-- <h4>(números fictícios)</h4> -->
         </div>
         <!-- Seletor de segmento e botões de ação -->
         <div class="controles-simulador">
@@ -26,7 +26,7 @@
             
             <div class="acoes-simulador">
                 <button id="btn-otimizar" class="btn btn-action">🚧 Otimizar Portfolio</button>
-                <button id="btn-salvar" class="btn btn-primary">🚧 Salvar Simulação</button>
+                <button id="btn-salvar" class="btn btn-primary">Exportar Simulação</button>
             </div>
         </div>
         
@@ -202,6 +202,39 @@
                     </tr>
                 </table>
             </div>
+
+        <!-- Tabela com todos os segmentos -->
+        <div class="segmentos-comparacao-section">
+            <div class="segmentos-header">
+                <h2>Comparativo por Segmento</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="segmentos-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Segmento</th>
+                            <th class="coluna-real" colspan="3">MOB</th>
+                            <th colspan="3">RORWA</th>
+                            <th colspan="3">PDD</th>
+                        </tr>
+                        <tr>
+                            <th class="coluna-real" >Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                            <th>Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                            <th>Real</th>
+                            <th>Simulado</th>
+                            <th>Δ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="segmentos-body">
+                        <!-- Será preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <!-- Seção de Premissas -->
         <div class="premissas-section">

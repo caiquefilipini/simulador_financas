@@ -1323,7 +1323,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         cellDiferenca.textContent = formatarValor(diferenca, 'inteiro');
         
         // Adiciona classe para destacar mudanças (vermelho para negativo, verde para positivo)
-        if (Math.abs(diferenca) > 0.5) { // Apenas aplica cores se a diferença for significativa
+        if (Math.abs(diferenca) > 0.01) { // Apenas aplica cores se a diferença for significativa
             if (diferenca > 0) {
                 cellDiferenca.classList.add('positivo');
             } else if (diferenca < 0) {

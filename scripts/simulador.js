@@ -552,7 +552,6 @@ export function obterDadosCreditoSimulados() {
     const dadosReais = obterDadosCreditoReais();
     
     // Sempre retorna dados com valores simulados (mesmo sem ajustes)
-    // Isso resolve o ERRO 5, preenchendo valores simulados mesmo sem ajustes
     
     return dadosReais.map(item => {
         // Busca ajustes específicos para este segmento e tipo
@@ -572,12 +571,9 @@ export function obterDadosCreditoSimulados() {
         
         // Obtém valores ajustados ou mantém os originais (com prefixo de segmento)
         const carteiraSimulada = ajusteItemSegmento.carteira ? ajusteItemSegmento.carteira.simulado : item.carteira;
-        // const provisaoSimulada = ajusteItemSegmento.provisao ? ajusteItemSegmento.provisao.simulado : item.provisao;
         const spreadSimulado = ajusteItemSegmento.spread ? ajusteItemSegmento.spread.simulado : item.spread;
         const provisaoOriginal = item.provisao;
         const carteiraOriginal = item.carteira;
-        const margemOriginal = item.margem;
-        const rwaOriginal = item.rwa;
         
         // Calcula valores derivados com base nas regras de negócio
         let provisaoSimulada = provisaoOriginal;
@@ -589,16 +585,13 @@ export function obterDadosCreditoSimulados() {
             provisaoSimulada = ajusteItemSegmento.provisao.simulado;
         }
         
-        // Calcula a margem simulada
-        let margemSimulada = item.margem;
-        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal){
-          margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
-        }
+        // Calcula a margem simulada - SEMPRE usando ambos os valores ajustados
+        const margemSimulada = carteiraSimulada * (spreadSimulado / 100);
         
         // Calcula o RWA simulado
         let rwaSimulado = item.rwa;
-        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal) {
-            rwaSimulado = Math.round(item.rwa / carteiraOriginal * carteiraSimulada);
+        if (carteiraOriginal > 0) {
+            rwaSimulado = (item.rwa / carteiraOriginal) * carteiraSimulada;
         }
         
         return {
@@ -648,28 +641,16 @@ export function obterDadosCaptacoesSimulados() {
     const { dados, segmentoAtual, ajustes } = estadoSimulador;
     const dadosReais = obterDadosCaptacoesReais();
     
-    // Sempre retorna dados com valores simulados (mesmo sem ajustes)
-    // Isso resolve o ERRO 5, preenchendo valores simulados mesmo sem ajustes
-    
     return dadosReais.map(item => {
         // Busca ajustes específicos para este segmento e tipo
         const ajusteItemSegmento = ajustes.captacoes[`${segmentoAtual}-${item.tipo}`] || {};
-        const carteiraOriginal = item.carteira;
+        
         // Obtém valores ajustados ou mantém os originais
         const carteiraSimulada = ajusteItemSegmento.carteira ? ajusteItemSegmento.carteira.simulado : item.carteira;
         const spreadSimulado = ajusteItemSegmento.spread ? ajusteItemSegmento.spread.simulado : item.spread;
         
-        // Calcula a margem simulada
-        // const margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
-        // let margemSimulada = item.margem;
-        // if (item.carteira > 0 && carteiraSimulada !== carteiraOriginal){
-        //   margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
-        // }
-
-        let margemSimulada = item.margem;
-        if (carteiraOriginal > 0 && carteiraSimulada !== carteiraOriginal){
-          margemSimulada = Math.round(carteiraSimulada * (spreadSimulado / 100));
-        }
+        // Calcula a margem simulada - Sempre usando AMBOS os valores ajustados
+        const margemSimulada = carteiraSimulada * (spreadSimulado / 100);
         
         return {
             ...item,

@@ -7,7 +7,8 @@ import { obterSegmentos, formatarValor, obterTiposProduto } from './dados.js';
 import { 
     obterEstadoSimulador, atualizarSegmento, atualizarVisualizacaoCascada, 
     registrarAjusteCredito, registrarAjusteCaptacao, registrarAjusteComissao,
-    temAjustes, limparAjustes, obterListaAjustes, atualizarSomaDiferencas
+    temAjustes, limparAjustes, obterListaAjustes, atualizarSomaDiferencas, obterDadosComparativoSegmentos,
+    calcularSomaDiferencasSegmento, calcularSomaDiferencasTodosSegmentos 
 } from './simulador.js';
 
 // Inicializa a interface do usuário
@@ -83,6 +84,280 @@ function configurarAbas() {
     });
 }
 
+// Função para exportar a simulação para Excel
+export function exportarSimulacaoParaExcel() {
+    // Primeiro, vamos verificar se temos a biblioteca XLSX disponível
+    if (typeof XLSX === 'undefined') {
+        // Se não tiver, carrega dinamicamente o script
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        script.onload = function() {
+            // Quando o script é carregado, chama a função de exportação
+            gerarExcel();
+        };
+        document.head.appendChild(script);
+    } else {
+        // Se já tiver o XLSX, chama diretamente
+        gerarExcel();
+    }
+}
+
+// Função que gera efetivamente o Excel
+function gerarExcel() {
+    // Cria um novo workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Adiciona uma planilha com a lista de ajustes
+    adicionarPlanilhaAjustes(wb);
+    
+    // Adiciona uma planilha com o comparativo por segmento
+    adicionarPlanilhaComparativo(wb);
+    
+    // Gera o arquivo Excel e inicia o download
+    const dataAtual = new Date().toISOString().slice(0, 10);
+    const options = { bookType: 'xlsx', type: 'binary' };
+    XLSX.writeFile(wb, `Simulacao_Financeira_${dataAtual}.xlsx`, options);
+}
+
+// Função para adicionar a planilha de ajustes
+function adicionarPlanilhaAjustes(wb) {
+    // Obtém a lista de ajustes
+    const ajustes = obterListaAjustes();
+    
+    // Prepara os dados para a planilha
+    const dadosAjustes = [];
+    
+    // Adiciona cabeçalho
+    dadosAjustes.push(['Simulação Financeira - Ajustes Realizados']);
+    dadosAjustes.push([]);
+    dadosAjustes.push(['Categoria', 'Segmento', 'Produto', 'Campo', 'Valor Real', 'Valor Simulado', 'Ajuste']);
+    
+    // Adiciona ajustes de crédito
+    if (ajustes.credito.length > 0) {
+        ajustes.credito.forEach(ajuste => {
+            dadosAjustes.push([
+                'Crédito',
+                formatarNomeProduto(ajuste.segmento),
+                formatarNomeProduto(ajuste.tipo),
+                obterNomeCampo(ajuste.campo),
+                ajuste.valorReal,
+                ajuste.valorSimulado,
+                ajuste.diferenca
+            ]);
+        });
+    }
+    
+    // Adiciona ajustes de captações
+    if (ajustes.captacoes.length > 0) {
+        ajustes.captacoes.forEach(ajuste => {
+            dadosAjustes.push([
+                'Captações',
+                formatarNomeProduto(ajuste.segmento),
+                formatarNomeProduto(ajuste.tipo),
+                obterNomeCampo(ajuste.campo),
+                ajuste.valorReal,
+                ajuste.valorSimulado,
+                ajuste.diferenca
+            ]);
+        });
+    }
+    
+    // Adiciona ajustes de comissões
+    if (ajustes.comissoes.length > 0) {
+        ajustes.comissoes.forEach(ajuste => {
+            dadosAjustes.push([
+                'Comissões',
+                formatarNomeProduto(ajuste.segmento),
+                formatarNomeProduto(ajuste.tipo),
+                'Valor',
+                ajuste.valorReal,
+                ajuste.valorSimulado,
+                ajuste.diferenca
+            ]);
+        });
+    }
+    
+    // Se não houver ajustes, adiciona uma mensagem
+    if (ajustes.credito.length === 0 && ajustes.captacoes.length === 0 && ajustes.comissoes.length === 0) {
+        dadosAjustes.push(['Nenhum ajuste realizado.']);
+    }
+    
+    // Cria a worksheet e adiciona ao workbook
+    const ws = XLSX.utils.aoa_to_sheet(dadosAjustes);
+    XLSX.utils.book_append_sheet(wb, ws, 'Ajustes');
+    
+    // Aplica alguns estilos básicos (largura das colunas)
+    ws['!cols'] = [
+        { wch: 15 }, // Categoria
+        { wch: 15 }, // Segmento
+        { wch: 20 }, // Produto
+        { wch: 15 }, // Campo
+        { wch: 12 }, // Valor Real
+        { wch: 12 }, // Valor Simulado
+        { wch: 12 }  // Ajuste
+    ];
+}
+
+// Função para adicionar a planilha de comparativo
+function adicionarPlanilhaComparativo(wb) {
+    // Obtém os dados comparativos
+    const dadosComparativos = obterDadosComparativoSegmentos();
+    
+    // Prepara os dados para a planilha
+    const dadosExcel = [];
+    
+    // Adiciona cabeçalho
+    dadosExcel.push(['Simulação Financeira - Comparativo por Segmento']);
+    dadosExcel.push([]);
+    
+    // Cabeçalhos principais
+    dadosExcel.push([
+        'Segmento', 
+        'MOB Real', 'MOB Simulado', 'MOB Δ',
+        'MOL Real', 'MOL Simulado', 'MOL Δ',
+        'BAI Real', 'BAI Simulado', 'BAI Δ',
+        'BDI Real', 'BDI Simulado', 'BDI Δ',
+        'RWA Real', 'RWA Simulado', 'RWA Δ',
+        'RORWA Real', 'RORWA Simulado', 'RORWA Δ',
+        'PDD Real', 'PDD Simulado', 'PDD Δ'
+    ]);
+    
+    // Mapeamento para formatar corretamente os nomes dos segmentos
+    const formatacaoSegmentos = {
+        "pj": "PJ",
+        "scib": "SCIB",
+        "private": "Private",
+        "select": "Select",
+        "especial": "Especial",
+        "prospera": "Prospera",
+        "consumer": "Consumer",
+        "corporate": "Corporate",
+        "total": "Total"
+    };
+    
+    // Para cada segmento, obtenha os dados adicionais da cascada
+    dadosComparativos.forEach(item => {
+        // Obter dados da cascada para este segmento
+        const dadosCascada = obterDadosCascadaPorSegmento(item.segmento);
+        
+        dadosExcel.push([
+            // Segmento
+            formatarNomeProduto(item.segmento),
+            
+            // MOB (já existe no dadosComparativos)
+            item.mob.real,
+            item.mob.simulado,
+            item.mob.delta,
+            
+            // MOL (obtido da cascada)
+            dadosCascada.real.mol || 0,
+            dadosCascada.simulado.mol || 0,
+            (dadosCascada.simulado.mol || 0) - (dadosCascada.real.mol || 0),
+            
+            // BAI (obtido da cascada)
+            dadosCascada.real.bai || 0,
+            dadosCascada.simulado.bai || 0,
+            (dadosCascada.simulado.bai || 0) - (dadosCascada.real.bai || 0),
+            
+            // BDI (obtido da cascada)
+            dadosCascada.real.bdi || 0,
+            dadosCascada.simulado.bdi || 0,
+            (dadosCascada.simulado.bdi || 0) - (dadosCascada.real.bdi || 0),
+            
+            // RWA (obtido da cascada)
+            dadosCascada.real.rwa || 0,
+            dadosCascada.simulado.rwa || 0,
+            (dadosCascada.simulado.rwa || 0) - (dadosCascada.real.rwa || 0),
+            
+            // RORWA (já existe no dadosComparativos)
+            item.rorwa.real,
+            item.rorwa.simulado,
+            item.rorwa.delta,
+            
+            // PDD (já existe no dadosComparativos)
+            item.pdd.real,
+            item.pdd.simulado,
+            item.pdd.delta
+        ]);
+    });
+    
+    // Cria a worksheet e adiciona ao workbook
+    const ws = XLSX.utils.aoa_to_sheet(dadosExcel);
+    XLSX.utils.book_append_sheet(wb, ws, 'Comparativo');
+    
+    // Aplica alguns estilos básicos (largura das colunas)
+    ws['!cols'] = Array(23).fill().map(() => ({ wch: 12 }));
+    ws['!cols'][0] = { wch: 15 }; // Coluna de Segmento um pouco mais larga
+}
+
+// Função para obter os dados da cascada para um segmento específico
+function obterDadosCascadaPorSegmento(segmento) {
+    const { dados } = obterEstadoSimulador();
+    
+    if (!dados || !dados[segmento] || !dados[segmento].cascada) {
+        return {
+            real: {},
+            simulado: {}
+        };
+    }
+    
+    const dadosReais = dados[segmento].cascada.cascada;
+    
+    // Calcular valores simulados
+    let somaDiferencas;
+    if (segmento === 'total') {
+        somaDiferencas = calcularSomaDiferencasTodosSegmentos();
+    } else {
+        somaDiferencas = calcularSomaDiferencasSegmento(segmento);
+    }
+    
+    // Calcula os valores simulados
+    const mobSimulado = dadosReais.mob + somaDiferencas.margem;
+    const pddSimulado = dadosReais.pdd + somaDiferencas.provisao;
+    const molSimulado = mobSimulado - Math.abs(pddSimulado);
+    
+    const demaisAtivosSimulado = dadosReais.demais_ativos;
+    const orypSimulado = dadosReais.oryp;
+    const totalGastosSimulado = dadosReais.total_gastos;
+    
+    const baiSimulado = molSimulado + demaisAtivosSimulado + orypSimulado + totalGastosSimulado;
+    
+    // Cálculo de impostos
+    const diferencaMob = mobSimulado - dadosReais.mob;
+    const pis = diferencaMob * (-0.0465);
+    const ir = ((baiSimulado - dadosReais.bai) + pis) * (-0.3);
+    const impostoAdicional = pis + ir;
+    const impostosSimulado = dadosReais.impostos + impostoAdicional;
+    
+    const bdiSimulado = baiSimulado + impostosSimulado;
+    
+    return {
+        real: dadosReais,
+        simulado: {
+            mob: mobSimulado,
+            pdd: pddSimulado,
+            mol: molSimulado,
+            demais_ativos: demaisAtivosSimulado,
+            oryp: orypSimulado,
+            total_gastos: totalGastosSimulado,
+            bai: baiSimulado,
+            impostos: impostosSimulado,
+            bdi: bdiSimulado
+        }
+    };
+}
+
+// Função auxiliar para obter o nome formatado do campo
+function obterNomeCampo(campo) {
+    switch (campo) {
+        case 'carteira': return 'Carteira';
+        case 'spread': return 'Spread';
+        case 'provisao': return 'Provisão';
+        case 'valor': return 'Valor';
+        default: return campo;
+    }
+}
+
 // Configura botões de ação
 function configurarBotoes() {
     // Botão de otimização
@@ -94,10 +369,13 @@ function configurarBotoes() {
     // Botão de salvar (não implementado neste MVP)
     const btnSalvar = document.getElementById('btn-salvar');
     if (btnSalvar) {
-        btnSalvar.addEventListener('click', () => {
-            alert('Funcionalidade de salvar simulação a ser implementada!');
-        });
+        btnSalvar.addEventListener('click', exportarSimulacaoParaExcel);
     }
+    // if (btnSalvar) {
+    //     btnSalvar.addEventListener('click', () => {
+    //         alert('Funcionalidade de salvar simulação a ser implementada!');
+    //     });
+    // }
     
     // Botão de limpar ajustes
     const btnLimparAjustes = document.getElementById('btn-limpar-ajustes');
@@ -375,7 +653,7 @@ function configurarCamposComissoes() {
 }
 
 // Helper para formatar nomes de produtos para exibição
-function formatarNomeProduto(nome) {
+export function formatarNomeProduto(nome) {
     // Casos especiais que precisam de formatação específica
     const casosEspeciais = {
         
@@ -513,6 +791,8 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             inputSpread.addEventListener('input', (e) => {
                 // Permitir apenas números, vírgula e sinal negativo
                 const regex = /^-?\d*([.,]\d*)?$/;
+                console.log(regex.test(e.target.value))
+                console.log(previousValue)
                 if (!regex.test(e.target.value)) {
                     e.target.value = previousValue;
                 } else {
@@ -629,9 +909,9 @@ export function atualizarTabelaCredito(dados, isSimulado) {
                     const ajuste = item.spreadSimulado - valorReal;
                     
                     // Se o ajuste for 0, deixe o campo vazio
-                    if (ajuste === 0) {
-                        inputSpread.value = '';
-                    } 
+                    // if (ajuste === 0) {
+                    //     inputSpread.value = '';
+                    // } 
                     // else {
                     //     inputSpread.value = ajuste.toFixed(2); // Formata o ajuste com 2 casas decimais
                     // }
@@ -828,9 +1108,9 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
                     const ajuste = item.spreadSimulado - valorReal;
                     
                     // Se o ajuste for 0, deixe o campo vazio
-                    if (ajuste === 0) {
-                        inputSpread.value = '';
-                    } 
+                    // if (ajuste === 0) {
+                    //     inputSpread.value = '';
+                    // } 
                     // else {
                     //     inputSpread.value = ajuste.toFixed(2); // Formata o ajuste com 2 casas decimais
                     // }

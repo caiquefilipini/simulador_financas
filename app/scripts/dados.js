@@ -36,6 +36,7 @@ export function formatarValor(valor, tipo) {
             return valor.toFixed(2);
         
         case 'rorwa':
+            // RORWA: decimal com 2 casas
             return valor.toFixed(2);
         
         case 'percentual':
@@ -48,16 +49,6 @@ export function formatarValor(valor, tipo) {
             return Math.round(valor).toLocaleString('pt-BR');
     }
 }
-
-// export function formatarValorComparativo(valor, tipo) {
-//     // Primeiro, verifique se o valor está muito próximo de zero
-//     if (Math.abs(valor) < 0.005) {
-//         return "0.00"; // Retorna zero sem sinal
-//     }
-    
-//     // Se não for próximo de zero, use a formatação normal
-//     return formatarValor(valor, tipo);
-// }
 
 // Função para obter os tipos de produto para cada categoria
 export function obterTiposProduto(dados, segmento, categoria) {
