@@ -1,0 +1,967 @@
+/* ===== ESTILOS BÁSICOS ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 0px;
+    color: #e3000b; /* Cor vermelha Santander */
+}
+
+h2, h3 {
+    margin: 20px 0 1px;
+    color: #444;
+}
+
+.titulo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h4 {
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+/* ===== CONTROLES DO SIMULADOR ===== */
+.controles-simulador {
+    display: flex;
+    justify-content: space-between; /* Mantém os elementos separados */
+    align-items: center;
+    margin-bottom: 0px;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 1200px; /* Garante mesma largura do container */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.filtro-segmento {
+    flex: 0 0 auto; /* Não expande, mantém o tamanho natural */
+    margin-right: auto; /* Empurra para a esquerda */
+}
+
+.acoes-simulador {
+    display: flex;
+    gap: 10px;
+    margin-left: auto; /* Empurra para a direita */
+}
+
+/* Ajuste o select para ficar menor */
+select {
+    width: 220px; /* Largura fixa menor */
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Para alinhar à esquerda com a tabela */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.filtro-segmento label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-align: left; /* Garante alinhamento à esquerda */
+}
+
+/* Adicione isso para garantir alinhamento com as abas/tabela */
+.tabs, .controles-simulador {
+    padding-left: 0; /* Remove padding da esquerda */
+    padding-right: 0; /* Remove padding da direita */
+}
+
+.acoes-simulador {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn-primary {
+    background-color: #e3000b;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-action {
+    background-color: #0069d9;
+    color: white;
+}
+
+/* ===== MODAL ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* ===== SIMULAÇÕES SALVAS ===== */
+.simulacoes-salvas {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.simulacoes-salvas h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+.hidden {
+    display: none;
+}
+
+.lista-simulacoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.card-simulacao {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 15px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.card-simulacao:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-simulacao.active {
+    border-color: #e3000b;
+    box-shadow: 0 4px 8px rgba(227, 0, 11, 0.2);
+}
+
+.simulacao-nome {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.simulacao-data {
+    font-size: 12px;
+    color: #666;
+}
+
+.simulacao-descricao {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.no-simulacoes {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+}
+
+.representacao_numero {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 300;
+    font-style: italic;
+}
+
+.cascada {
+  text-align: center;
+}
+
+
+.row-demais {
+  background-color: #f8f8f8;
+  font-style: italic;
+}
+
+.row-demais td {
+  font-style: italic;
+}
+
+.input-demais {
+  font-style: italic;
+  background-color: #f8f8f8;
+}
+
+/* ===== INPUTS ===== */
+
+
+
+
+
+
+
+/* ===== SISTEMA DE ABAS ===== */
+.tabs {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #eee;
+}
+
+.tab-button {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-button.active {
+    border-bottom-color: #e3000b;
+    color: #e3000b;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ===== TABELAS ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    min-width: 800px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #fafafa;
+}
+
+tr.highlight {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+/* Estilo para linhas de resultado (MOL, BAI, BDI) */
+tr.linha-resultado {
+  background-color: #f3f3f3; /* Azul claro suave */
+  font-weight: bold;
+}
+
+/* Você também pode adicionar uma borda sutil para enfatizar */
+/* tr.linha-resultado td {
+  border-top: 1px solid #999;
+  border-bottom: 1px solid #999;
+} */
+
+/* Opcional: destacar o texto do nome do indicador */
+/* tr.linha-resultado td:first-child {
+  color: #0066cc; /* Azul mais escuro para o texto */
+/* } */
+
+/* Alinhamento à direita para tabelas nas abas, mas não para Cascada */
+#credito table td:not(:first-child),
+#captacoes table td:not(:first-child),
+#comissoes table td:not(:first-child) {
+  text-align: right;
+}
+
+/* Para os cabeçalhos */
+#credito table th:not(:first-child),
+#captacoes table th:not(:first-child),
+#comissoes table th:not(:first-child) {
+  text-align: right;
+}
+
+/* Para inputs dentro das células */
+#credito table td:not(:first-child) input,
+#captacoes table td:not(:first-child) input,
+#comissoes table td:not(:first-child) input {
+  text-align: right;
+}
+
+/* Destacar valores simulados */
+/* Estilo consistente para todos os inputs na aplicação */
+/* input[type="number"] { */
+  input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: right;
+    background-color: #f8f9ff; /* Fundo cinza claro para todos os inputs */
+    font-size: 14px;
+  }
+  
+  /* Estilo específico para os inputs de spread */
+  .spread-simulado {
+    background-color: #f8f9ff;
+    border: 1px solid #bbd;
+    color: #334;
+  }
+    
+  .spread-simulado:focus {
+    border-color: #4488ff;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
+  }
+  
+  /* Estilo para os inputs de carteira simulada */
+  .carteira-simulada {
+    background-color: #f8f9ff;
+    border: 1px solid #bbd;
+    color: #334;
+  }
+  
+  .carteira-simulada:focus {
+    border-color: #4488ff;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
+  }
+  
+  /* Estilo para os inputs de provisão simulada */
+  .provisao-simulada {
+    background-color: #f8f9ff;
+    border: 1px solid #bbd;
+    color: #334;
+  }
+  
+  .provisao-simulada:focus {
+    border-color: #4488ff;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
+  }
+  
+  /* Estilo para os inputs de valor simulado */
+  .valor-simulado-input {
+    background-color: #f8f9ff;
+    border: 1px solid #bbd;
+    color: #334;
+  }
+  
+  .valor-simulado-input:focus {
+    border-color: #4488ff;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
+  }
+
+
+
+/* ===== PREMISSAS ===== */
+/* Seção de Premissas */
+.premissas-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+  
+  .premissas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .premissas-header h2 {
+    margin: 0;
+    color: #444;
+  }
+  
+  .premissas-content {
+    padding: 0 10px;
+  }
+  
+  #premissas-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+  }
+  
+  #premissas-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #premissas-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .add-premissa {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .add-premissa input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  /* Botão para remover premissa */
+  .btn-remove-premissa {
+    background-color: transparent;
+    color: #999;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 5px;
+  }
+  
+  .btn-remove-premissa:hover {
+    color: #e3000b;
+  }
+
+
+
+
+/* ===== INPUTS ===== */
+/* Estilo para todos os inputs numéricos nas tabelas */
+/* Estilo consistente para texto nas células de tabela */
+table td {
+    font-weight: normal; /* Remove o negrito */
+    font-size: 14px;     /* Tamanho de fonte consistente */
+    color: #333;         /* Cor consistente */
+  }
+  
+  /* Se você quer manter apenas a primeira coluna em negrito (nomes dos tipos) */
+  table td:first-child {
+    font-weight: 500; /* Semi-negrito para nomes */
+  }
+  
+  /* Estilo padrão para valores numéricos */
+  table td:nth-child(2),
+  table td:nth-child(4) {
+    text-align: right; /* Alinha valores à direita */
+  }
+  
+  /* Estilo para todos os inputs nas tabelas */
+  table input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: right;
+    font-weight: normal; /* Garante que o texto no input não seja negrito */
+    font-size: 14px;     /* Tamanho de fonte consistente */
+  }
+  
+  /* Remover as setas/spinners dos campos numéricos */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+/* Alinhamento dos cabeçalhos apenas para as tabelas nas abas */
+#credito table th,
+#captacoes table th,
+#comissoes table th {
+  text-align: left !important; /* Força alinhamento à esquerda */
+  padding-left: 15px; /* Adiciona um pouco de espaço à esquerda */
+}
+
+/* Primeira coluna de cada linha nas tabelas das abas */
+#credito table td:first-child,
+#captacoes table td:first-child,
+#comissoes table td:first-child {
+  text-align: left !important;
+  padding-left: 15px;
+}
+
+/* Preserva os alinhamentos originais para a tabela de Cascada */
+.pl-table th:first-child {
+  text-align: left; /* Primeira coluna à esquerda */
+}
+
+.pl-table th:not(:first-child) {
+  text-align: center; /* Outras colunas centralizadas */
+}
+
+
+/* Adicionar bordas leves entre as colunas das tabelas */
+#credito table th,
+#captacoes table th,
+#comissoes table th,
+#credito table td,
+#captacoes table td,
+#comissoes table td {
+  border-right: 1px solid #e0e0e0; /* Borda cinza clara à direita de cada célula */
+}
+
+/* Remover borda da última coluna para manter aparência limpa */
+#credito table th:last-child,
+#captacoes table th:last-child,
+#comissoes table th:last-child,
+#credito table td:last-child,
+#captacoes table td:last-child,
+#comissoes table td:last-child {
+  border-right: none;
+}
+
+/* Separador visual mais evidente entre cabeçalho e corpo da tabela */
+#credito table thead,
+#captacoes table thead,
+#comissoes table thead {
+  border-bottom: 2px solid #ddd;
+}
+
+/* Opcional: bordas leves também para a tabela de Cascada */
+.pl-table th,
+.pl-table td {
+  border-right: 1px solid #e0e0e0;
+}
+
+.pl-table th:last-child,
+.pl-table td:last-child {
+  border-right: none;
+}
+
+/* Melhorar espaçamento das células para acomodar as bordas */
+table th, 
+table td {
+  padding: 12px 15px;
+}
+
+
+
+
+  /* Nova abordagem */
+.input-with-percent {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .input-with-percent input {
+    flex-grow: 1;
+    text-align: right;
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  
+  .percent-sign {
+    padding: 0 8px;
+    /* background-color: #f5f5f5; */
+    /* border: 1px solid #ddd; */
+    border-left: none;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+/* ===== P&L SECTION ===== */
+.pl-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Mantenha a primeira coluna alinhada à esquerda */
+.pl-table td:first-child {
+    text-align: left;
+  }
+  
+  /* Centralize todas as outras células da tabela */
+  .pl-table td:not(:first-child) {
+    text-align: center;
+  }
+  
+  /* Se os cabeçalhos também precisarem ser centralizados */
+  .pl-table th:not(:first-child) {
+    text-align: center;
+  }
+
+.table-separator td {
+    padding: 0px 0;
+    border-bottom: 2px solid #ddd;
+}
+
+.indicadores-header th {
+    text-align: left;
+    font-size: 18px;
+    padding: 12px 15px;
+    background-color: #e7e7e7;
+}
+
+.indicadores-section {
+    background-color: #f9f9f9;
+}
+
+.indicadores-section tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* ===== AJUSTES REALIZADOS ===== */
+.ajustes-realizados {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.ajustes-realizados h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+.grid-ajustes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.categoria-ajustes {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.categoria-ajustes h3 {
+    margin: 0;
+    padding: 12px 15px;
+    background-color: #f5f5f5;
+    color: #e3000b;
+    border-bottom: 1px solid #eee;
+}
+
+.lista-ajustes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.lista-ajustes li {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lista-ajustes li:last-child {
+    border-bottom: none;
+}
+
+.ajuste-info {
+    font-weight: 500;
+}
+
+.ajuste-valor {
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    min-width: 60px;
+    text-align: right;
+}
+
+.positivo {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.negativo {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.no-ajustes {
+    color: #888;
+    font-style: italic;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.ajustes-realizados {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+    position: relative; /* Para posicionamento relativo */
+}
+
+.ajustes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ajustes-header h2 {
+    margin: 0;
+    color: #444;
+}
+
+#btn-limpar-ajustes {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#btn-limpar-ajustes:hover {
+    background-color: #8c949a;
+}
+
+
+.pl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+.pl-header .titulo {
+    display: flex;
+    flex-direction: column;
+}
+
+.pl-header .titulo h4 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.pl-view-buttons {
+    display: flex;
+    gap: 10px;
+}
+  
+.btn-view {
+background-color: #f0f0f0;
+color: #333;
+border: 1px solid #ddd;
+padding: 5px 12px;
+font-size: 14px;
+font-weight: 500;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+
+.btn-view:hover {
+    background-color: #e8e8e8;
+  }
+
+.btn-view.active {
+    background-color: #e3000b;
+    color: white;
+    border-color: #e3000b;
+    }
+
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 14px;
+}
+
+
+
+
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+    .grid-ajustes {
+        grid-template-columns: 1fr;
+    }
+    
+    .controles-simulador {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .acoes-simulador {
+        width: 100%;
+    }
+    
+    .lista-simulacoes {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .tabs, .ajustes-realizados, .pl-section, .simulacoes-salvas {
+        padding: 15px;
+    }
+    
+    .tab-content {
+        padding: 15px 10px;
+    }
+}
+
+/* Estilos para tornar a tabela de cascada responsiva */
+@media screen and (max-width: 768px) {
+  .pl-table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .pl-table th, 
+  .pl-table td {
+    font-size: 0.9rem;
+    padding: 6px 4px;
+    white-space: nowrap;
+  }
+  
+  /* Reduzir um pouco o padding nas representações numéricas */
+  .representacao_numero.cascada {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  
+  /* Melhorar alinhamento dos valores */
+  .pl-table td:not(:first-child) {
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  /* Adicionar um wrapper com scroll horizontal */
+  .pl-section {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}

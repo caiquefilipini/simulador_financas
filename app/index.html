@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Chama</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon"  type="image/x-icon" href="icone.ico">
+    <!-- <link rel="icon" href="{{ url_for('static', filename='icone.ico') }}"> -->
+
+</head>
+<body>
+    <div class="container">
+        <div class="titulo">
+            <h1>Simulador de Resultados</h1>
+            <h4>(números fictícios)</h4>
+        </div>
+        <!-- Seletor de segmento e botões de ação -->
+        <div class="controles-simulador">
+            <div class="filtro-segmento">
+                <label for="segment">Selecione o Segmento:</label>
+                <select id="segment">
+                    <!-- Opções preenchidas via JavaScript -->
+                </select>
+            </div>
+            
+            <div class="acoes-simulador">
+                <button id="btn-otimizar" class="btn btn-action">🚧 Otimizar Portfolio</button>
+                <button id="btn-salvar" class="btn btn-primary">🚧 Salvar Simulação</button>
+            </div>
+        </div>
+        
+        <!-- Modal para salvar simulação -->
+        <!-- <div id="modal-salvar" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Salvar Simulação</h3>
+                <div class="form-group">
+                    <label for="nome-simulacao">Nome da Simulação:</label>
+                    <input type="text" id="nome-simulacao" placeholder="Ex: Aumento de carteira PJ">
+                </div>
+                <div class="form-group">
+                    <label for="descricao-simulacao">Descrição (opcional):</label>
+                    <textarea id="descricao-simulacao" placeholder="Descreva brevemente esta simulação..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button id="cancelar-salvar" class="btn btn-secondary">Cancelar</button>
+                    <button id="confirmar-salvar" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </div> -->
+        
+        <!-- Seção de simulações salvas (inicialmente oculta) -->
+        <!-- <div id="simulacoes-salvas" class="simulacoes-salvas hidden">
+            <h2>Simulações Salvas</h2>
+            <div class="lista-simulacoes"> -->
+                <!-- Preenchido via JavaScript -->
+                <!-- <p class="no-simulacoes">Nenhuma simulação salva.</p>
+            </div>
+        </div> -->
+
+        <!-- Abas -->
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="credito">Crédito</button>
+                <button class="tab-button" data-tab="captacoes">Captações</button>
+                <button class="tab-button" data-tab="comissoes">Comissões</button>
+            </div>
+            
+            <!-- Conteúdo da aba Crédito -->
+            <div id="credito" class="tab-content active">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Crédito</th>
+                            <th>Carteira Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Carteira<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Spread Real<p class="representacao_numero">(%)</p></th>
+                            <th>Ajuste Spread<p class="representacao_numero">(p.p)</p></th>
+                            <th>Provisão Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Provisão<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Margem Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Margem<p class="representacao_numero">(R$ M)</p></th>
+                            <th>RWA Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste RWA<p class="representacao_numero">(R$ M)</p></th>
+                        </tr>
+                    </thead>
+                    <tbody id="credito-body">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Conteúdo da aba Captações -->
+            <div id="captacoes" class="tab-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Captação</th>
+                            <th>Carteira Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Carteira<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Spread Real<p class="representacao_numero">(%)</p></th>
+                            <th>Ajuste Spread<p class="representacao_numero">(p.p.)</p></th>
+                            <th>Margem Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Margem<p class="representacao_numero">(R$ M)</p></th>
+                        </tr>
+                    </thead>
+                    <tbody id="captacoes-body">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Conteúdo da aba Comissões -->
+            <div id="comissoes" class="tab-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Comissão</th>
+                            <th>Valor Real<p class="representacao_numero">(R$ M)</p></th>
+                            <th>Ajuste Valor<p class="representacao_numero">(R$ M)</p></th>
+                        </tr>
+                    </thead>
+                    <tbody id="comissoes-body">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Seção de Ajustes Realizados -->
+        <div class="ajustes-realizados">
+            <div class="ajustes-header">
+                <h2>Ajustes Realizados</h2>
+                <button id="btn-limpar-ajustes" class="btn btn-secondary">Limpar Ajustes</button>
+            </div>
+            
+            <div class="grid-ajustes">
+                <!-- Ajustes de Crédito -->
+                <div class="categoria-ajustes">
+                    <h3>Crédito</h3>
+                    <ul id="lista-ajustes-credito" class="lista-ajustes">
+                        <!-- Preenchido via JavaScript -->
+                    </ul>
+                </div>
+                
+                <!-- Ajustes de Captações -->
+                <div class="categoria-ajustes">
+                    <h3>Captações</h3>
+                    <ul id="lista-ajustes-captacoes" class="lista-ajustes">
+                        <!-- Preenchido via JavaScript -->
+                    </ul>
+                </div>
+                
+                <!-- Ajustes de Comissões -->
+                <div class="categoria-ajustes">
+                    <h3>Comissões</h3>
+                    <ul id="lista-ajustes-comissoes" class="lista-ajustes">
+                        <!-- Preenchido via JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- P&L -->
+        <div class="pl-section">
+            <div class="pl-header">
+                <div class="titulo">
+                    <h2>Cascada 2025</h2>
+                    <!-- <h4>(em milhões R$)</h4> -->
+                </div>
+                <div class="pl-view-buttons">
+                    <button id="btn-view-total" class="btn btn-sm btn-view active">Total</button>
+                    <button id="btn-view-segment" class="btn btn-sm btn-view">Especial</button>
+                </div>
+            </div>
+                <table class="pl-table">
+                    <thead>
+                        <tr>
+                            <th>Indicador</th>
+                            <th>Real <p class="representacao_numero cascada">(R$ M)</p></th>
+                            <th>Simulado <p class="representacao_numero cascada">(R$ M)</p></th>
+                            <th>Δ</th>
+                            <th>% PPTO Real</th>
+                            <th>% PPTO Simulado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pl-body">
+                    <!-- Preenchido via JavaScript -->
+                    </tbody>
+                    
+                    <!-- Separador -->
+                    <tr class="table-separator">
+                        <td colspan="6"></td>
+                    </tr>
+                    
+                    <tbody id="indicadores-body" class="indicadores-section">
+                    <!-- Preenchido via JavaScript -->
+                    </tbody>
+                    <tr class="table-separator">
+                        <td colspan="6"></td>
+                    </tr>
+                </table>
+            </div>
+
+        <!-- Seção de Premissas -->
+        <div class="premissas-section">
+            <div class="premissas-header">
+                <h2>Indicadores Econômicos</h2>
+            </div>
+            <div class="premissas-content">
+                <ul id="premissas-list">
+                    <!-- <li>Margem simulada é calculada com base no spread simulado e na provisão simulada.</li>
+                    <li>RWA simulado é calculado com base no spread simulado e na provisão simulada.</li>
+                    <li>RORWA simulado é calculado com base no resultado simulado e no RWA simulado.</li> -->
+                    <li>Taxa Selic: 14,25% a.a.</li>
+                    <li>Inflação (IPCA) projetada 2025: 5,58% a.a.</li>
+                    <li>Crescimento do PIB projetado: 2,03% a.a.</li>
+                    <li>Taxa de desemprego: 6,1%</li>
+                    <li>Câmbio (R$/US$): 5,75</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="script.js"></script> -->
+    <!-- <script type="module" src="js/main.js"></script> -->
+    <script type="module" src="scripts/main.js"></script>
+
+
+</body>
+</html>
