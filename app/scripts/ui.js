@@ -880,8 +880,12 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             if (row) {
                 // Atualiza os valores simulados
                 console.log("diferença margem", Math.round(item.margemSimulada - item.margem))
-                row.querySelector('.margem-simulada').textContent = formatarValor(Math.round(item.margemSimulada - item.margem), 'inteiro');
-                row.querySelector('.rwa-simulado').textContent = formatarValor(item.rwaSimulado - item.rwa , 'inteiro');
+
+                const diferencaMargem = item.margemSimulada - item.margem < 0.1 ? 0 : item.margemSimulada - item.margem;
+                const diferencaRWA = item.rwaSimulado - item.rwa < 0.1 ? 0 : item.rwaSimulado - item.rwa;
+
+                row.querySelector('.margem-simulada').textContent = formatarValor(diferencaMargem, 'inteiro');
+                row.querySelector('.rwa-simulado').textContent = formatarValor(diferencaRWA , 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
                 // const inputCarteira = row.querySelector('input[name="carteira"]');
@@ -1084,7 +1088,8 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             
             if (row) {
                 // Atualiza os valores simulados
-                row.querySelector('.margem-simulada').textContent = formatarValor(item.margemSimulada - item.margem, 'inteiro');
+                const diferencaMargem = item.margemSimulada - item.margem < 0.1 ? 0 : item.margemSimulada - item.margem;
+                row.querySelector('.margem-simulada').textContent = formatarValor(diferencaMargem, 'inteiro');
                 
                 // Preenche os inputs com os valores simulados
                 // Para o campo de carteira, mostre apenas o ajuste, não o valor total
