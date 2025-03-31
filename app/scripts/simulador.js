@@ -441,13 +441,13 @@ export function atualizarTabelaComparativoSegmentos() {
         const cellRorwaReal = addCellWithFormatting(row, item.rorwa.real, 'rorwa');
         cellRorwaReal.classList.add('coluna-real');
         addCellWithFormatting(row, item.rorwa.simulado, 'rorwa');
-        addCellWithFormattingAndClass(row, item.rorwa.delta, 'rorwa', true);
+        addCellWithFormattingAndClass(row, item.rorwa.delta, 'rorwa', false);
         
         // Células de PDD (valores negativos representam provisões)
         const cellPddReal = addCellWithFormatting(row, item.pdd.real, 'inteiro');
         cellPddReal.classList.add('coluna-real');
         addCellWithFormatting(row, item.pdd.simulado, 'inteiro');
-        const cellPddDelta = addCellWithFormattingAndClass(row, item.pdd.delta, 'inteiro', true);
+        const cellPddDelta = addCellWithFormattingAndClass(row, item.pdd.delta, 'inteiro', false);
         // cellPddDelta.classList.add('coluna-real');
 
 

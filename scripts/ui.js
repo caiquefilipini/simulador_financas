@@ -1282,7 +1282,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         const row = document.createElement('tr');
         
         // Adiciona classe especial para linhas de resultado
-        if (item.campo === 'mol' || item.campo === 'bai' || item.campo === 'bdi') {
+        if (item.campo === 'mol' || item.campo === 'bai' || item.campo === 'bdi' ) {
             row.classList.add('linha-resultado');
         }
         
@@ -1307,7 +1307,7 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
             
             // Adiciona classe para destacar mudanças (vermelho para negativo, verde para positivo)
             const diferenca = valorSimulado - valorReal;
-            const epsilon = 0.5; // Tolerância para considerar valores iguais
+            const epsilon = 0.01; // Tolerância para considerar valores iguais
             
             if (Math.abs(diferenca) > epsilon) { // Apenas aplica cores se a diferença for significativa
                 if (diferenca > 0) {
@@ -1423,9 +1423,13 @@ export function atualizarTabelaCascada(dadosReais, dadosSimulados) {
         // Adiciona classe para destacar mudanças
         const epsilon = item.formato === 'percentual' || item.formato === 'rorwa' ? 0.01 : 0.1;
         if (Math.abs(diferenca) > epsilon) {
-            if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca < 0) {
+            if ((item.campo === 'rwa') && diferenca < 0) {
                 cellDiferenca.classList.add('positivo');
-            } else if ((item.campo === 'rorwa' || item.campo === 'rwa') && diferenca > 0) {
+            } else if ((item.campo === 'rwa') && diferenca > 0) {
+                cellDiferenca.classList.add('negativo');
+            } else if ((item.campo === 'rorwa') && diferenca > 0) {
+                cellDiferenca.classList.add('positivo');
+            } else if ((item.campo === 'rorwa') && diferenca < 0) {
                 cellDiferenca.classList.add('negativo');
             } else if ((item.campo === 'taxa_impositiva' || item.campo === 'eficiencia') && diferenca < 0) {
                 cellDiferenca.classList.add('positivo');
