@@ -696,6 +696,51 @@ export function formatarNomeProduto(nome) {
         .join(' ');
 }
 
+// Função auxiliar para buscar ajustes existentes por segmento/tipo/campo
+// Versão alternativa que usa o contexto
+function buscarAjuste(segmento, tipo, campo, contexto) {
+    const { ajustes } = obterEstadoSimulador();
+    
+    // Determinar a categoria com base no contexto
+    let categoria;
+    if (contexto === 'comissoes' || campo === 'valor') {
+        categoria = 'comissoes';
+    } else if (contexto === 'credito') {
+        categoria = 'credito';
+    } else if (contexto === 'captacoes') {
+        categoria = 'captacoes';
+    } else {
+        // Se o contexto não for especificado, tenta determinar pela estrutura
+        if (campo === 'provisao') {
+            categoria = 'credito'; // Apenas crédito tem provisão
+        } else {
+            // Para carteira e spread, verifica ambos
+            const chaveCredito = `${segmento}-${tipo}`;
+            if (ajustes.credito[chaveCredito] && ajustes.credito[chaveCredito][campo]) {
+                return ajustes.credito[chaveCredito][campo].diferenca;
+            }
+            
+            const chaveCaptacoes = `${segmento}-${tipo}`;
+            if (ajustes.captacoes[chaveCaptacoes] && ajustes.captacoes[chaveCaptacoes][campo]) {
+                return ajustes.captacoes[chaveCaptacoes][campo].diferenca;
+            }
+            
+            return null;
+        }
+    }
+    
+    // Busca o ajuste na categoria determinada
+    const chave = `${segmento}-${tipo}`;
+    
+    if (categoria === 'comissoes') {
+        const ajuste = ajustes.comissoes[chave];
+        return ajuste ? ajuste.diferenca : null;
+    } else {
+        const categoriaAjustes = ajustes[categoria][chave];
+        return categoriaAjustes && categoriaAjustes[campo] ? categoriaAjustes[campo].diferenca : null;
+    }
+}
+
 export function atualizarTabelaCredito(dados, isSimulado) {
     const tbody = document.getElementById('credito-body');
     
@@ -709,6 +754,8 @@ export function atualizarTabelaCredito(dados, isSimulado) {
     // Percorre os dados e insere ou atualiza as linhas na tabela
     dados.forEach(item => {
         let row;
+
+        const { segmentoAtual } = obterEstadoSimulador();
         
         if (!isSimulado) {
             // Cria uma nova linha para dados reais
@@ -748,9 +795,20 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             inputCarteira.value = ""; // Começa com 0 (sem ajuste)
             // inputCarteira.step = "any"; // Permite qualquer incremento, incluindo números negativos
     
+            // Obter o segmento atual do estado do simulador
+            // const { segmentoAtual } = obterEstadoSimulador();
+
+            // AQUI ESTÁ A MUDANÇA: Verificar se existe um ajuste para este campo
+            const ajusteCarteira = buscarAjuste(segmentoAtual, item.tipo, 'carteira', 'credito');
+            if (ajusteCarteira !== null) {
+                inputCarteira.value = ajusteCarteira;
+            } else {
+                inputCarteira.value = "";
+            }
+
             // // Armazena o valor real para referência
             inputCarteira.setAttribute('data-carteira-real', item.carteira);
-            let previousValueCarteira = '';
+            let previousValueCarteira = inputCarteira.value;
             inputCarteira.addEventListener('input', (e) => {
                 const regex = /^-?\d*$/;
                 console.log((regex.test(e.target.value)))
@@ -784,9 +842,19 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             inputSpread.placeholder = "0"; // Mostra zero como placeholder
             inputSpread.value = ""; // Campo vazio inicialmente
 
+            const ajusteSpread = buscarAjuste(segmentoAtual, item.tipo, 'spread', 'credito');
+            if (ajusteSpread !== null) {
+                inputSpread.value = Number(ajusteSpread).toFixed(2);;
+            } else {
+                inputSpread.value = "";
+            }
+
+            // let previousValue = inputSpread.value;
+
             // Adicione o valor real como atributo de dados
             inputSpread.setAttribute('data-spread-real', item.spread);
-            let previousValue = '';
+            // let previousValue = '';
+            let previousValue = inputSpread.value;
             // Adicionar validação para aceitar apenas números com sinal
             inputSpread.addEventListener('input', (e) => {
                 // Permitir apenas números, vírgula e sinal negativo
@@ -823,9 +891,16 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             inputProvisao.placeholder = "0"; // Mostra zero como placeholder
             inputProvisao.value = ""; // Campo vazio inicialmente
 
+            const ajusteProvisao = buscarAjuste(segmentoAtual, item.tipo, 'provisao', 'credito');
+            if (ajusteProvisao !== null) {
+                inputProvisao.value = ajusteProvisao;
+            } else {
+                inputProvisao.value = "";
+            }
+
             inputProvisao.setAttribute('data-provisao-real', item.provisao);
             // inputSpread.setAttribute('data-spread-real', item.spread);
-            let previousValueProvisao = '';
+            let previousValueProvisao = inputProvisao.value;
             // Adicionar validação para aceitar apenas números com sinal
             inputProvisao.addEventListener('input', (e) => {
                 const regex = /^-?\d*$/;
@@ -844,12 +919,6 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             cellProvisaoSimulada.appendChild(inputProvisao);
             row.appendChild(cellProvisaoSimulada);
             
-
-
-
-
-
-
             // Adiciona a célula de margem real
             const cellMargem = document.createElement('td');
             cellMargem.textContent = formatarValor(item.margem, 'inteiro');
@@ -871,8 +940,12 @@ export function atualizarTabelaCredito(dados, isSimulado) {
             cellRWASimulado.className = 'rwa-simulado';
             cellRWASimulado.textContent = formatarValor(item.rwa, 'inteiro');
             row.appendChild(cellRWASimulado);
-            
             tbody.appendChild(row);
+
+            
+
+
+
         } else {
             // Para dados simulados, atualiza os valores nas células existentes
             row = [...tbody.querySelectorAll('tr')].find(r => r.getAttribute('data-tipo') === item.tipo);
@@ -952,6 +1025,8 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
     dados.forEach(item => {
         let row;
         
+        const { segmentoAtual } = obterEstadoSimulador();
+
         if (!isSimulado) {
             // Cria uma nova linha para dados reais
             row = document.createElement('tr');
@@ -987,12 +1062,19 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             inputCarteira.className = 'carteira-simulada';
             inputCarteira.placeholder = "0"; // Mostra zero como placeholder
             inputCarteira.value = ""; // Campo vazio para permitir digitar sinal negativo
-            
+
+            const ajusteCarteira = buscarAjuste(segmentoAtual, item.tipo, 'carteira', 'captacoes');
+            if (ajusteCarteira !== null) {
+                inputCarteira.value = ajusteCarteira;
+            } else {
+                inputCarteira.value = "";
+            }
+
             // Adicione o valor real como atributo de dados
     
             // // Armazena o valor real para referência
             inputCarteira.setAttribute('data-carteira-real', item.carteira);
-            let previousValueCarteira = '';
+            let previousValueCarteira = inputCarteira.value;
             // Adicionar validação para aceitar apenas números com sinal
             inputCarteira.addEventListener('input', (e) => {
                 // Permitir apenas dígitos, sinal de menos e vírgula/ponto
@@ -1040,9 +1122,20 @@ export function atualizarTabelaCaptacoes(dados, isSimulado) {
             inputSpread.placeholder = "0"; // Mostra zero como placeholder
             inputSpread.value = ""; // Campo vazio inicialmente
 
-            // Adicionar validação para aceitar apenas números com sinal
+            const ajusteSpread = buscarAjuste(segmentoAtual, item.tipo, 'spread', 'captacoes');
+            if (ajusteSpread !== null) {
+                inputSpread.value = Number(ajusteSpread).toFixed(2);;
+            } else {
+                inputSpread.value = "";
+            }
+
+            // let previousValue = inputSpread.value;
+
+            // Adicione o valor real como atributo de dados
             inputSpread.setAttribute('data-spread-real', item.spread);
-            let previousValue = '';
+            // let previousValue = '';
+            let previousValue = inputSpread.value;
+
             // Adicionar validação para aceitar apenas números com sinal
             inputSpread.addEventListener('input', (e) => {
                 // Permitir apenas números, vírgula e sinal negativo
@@ -1139,6 +1232,8 @@ export function atualizarTabelaComissoes(dados, isSimulado) {
     // Percorre os dados e insere ou atualiza as linhas na tabela
     dados.forEach(item => {
         let row;
+
+        const { segmentoAtual } = obterEstadoSimulador();
         
         if (!isSimulado) {
             // Cria uma nova linha para dados reais
@@ -1172,9 +1267,21 @@ export function atualizarTabelaComissoes(dados, isSimulado) {
             inputValor.placeholder = "0"; // Mostra zero como placeholder
             inputValor.value = ""; // Campo vazio para permitir digitar sinal negativo
 
-            // Adicione o valor real como atributo de dados
+            // AQUI ESTÁ A MUDANÇA: Verificar se existe um ajuste para este campo
+            const ajusteValor = buscarAjuste(segmentoAtual, item.tipo, 'valor', 'comissoes');
+            if (ajusteValor !== null) {
+                inputValor.value = ajusteValor;
+            } else {
+                inputValor.value = "";
+            }
+
+            // // Armazena o valor real para referência
             inputValor.setAttribute('data-valor-real', item.valor);
-            let previousValueCarteira = '';
+            let previousValueValor = inputValor.value;
+
+            // Adicione o valor real como atributo de dados
+            // inputValor.setAttribute('data-valor-real', item.valor);
+            // let previousValueCarteira = '';
             // Adicionar validação para aceitar apenas números com sinal
             inputValor.addEventListener('input', (e) => {
                 // Permitir apenas dígitos, sinal de menos e vírgula/ponto
@@ -1190,12 +1297,12 @@ export function atualizarTabelaComissoes(dados, isSimulado) {
                 if (!regex.test(e.target.value)) {
                     // Se não for válido, limpe caracteres inválidos
                     // e.target.value = e.target.value.replace(/[^\d]/g, '');
-                    e.target.value = previousValueCarteira;
+                    e.target.value = previousValueValor;
                 } else {
                     // Se for válido, armazene o valor atual
-                    previousValueCarteira = e.target.value;
+                    previousValueValor = e.target.value;
                 }
-                console.log("previous", previousValueCarteira)
+                console.log("previous", previousValueValor)
             
             });
 
